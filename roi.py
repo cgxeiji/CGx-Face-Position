@@ -1,4 +1,5 @@
 import cv2
+from smoother import Smoother
 
 class ROI(object):
     def __init__(self, max_width, max_height):
@@ -22,6 +23,13 @@ class ROI(object):
         self._x2 = 0
         self._y1 = 0
         self._y2 = 0
+
+        self.x1_s = Smoother(5)
+        self.x2_s = Smoother(5)
+        self.y1_s = Smoother(5)
+        self.y2_s = Smoother(5)
+
+        self.w_s = Smoother(5)
 
     def set_roi(self, x, y, width, height):
         # Take into account the offset of the previous ROI, if available
@@ -55,8 +63,26 @@ class ROI(object):
         if self._y2 > self._max_height:
             self._y2 = self._max_height
 
-        # Enable the flag for this ROI
-        self.is_detected = True
+        if self.is_detected:
+            self.x1_s.input(self._x1)
+            self.x2_s.input(self._x2)
+            self.y1_s.input(self._y1)
+            self.y2_s.input(self._y2)
+            self.w_s.input(self._width)
+        else:
+            self.x1_s.set(self._x1)
+            self.x2_s.set(self._x2)
+            self.y1_s.set(self._y1)
+            self.y2_s.set(self._y2)
+            self.w_s.set(self._width)
+            # Enable the flag for this ROI
+            self.is_detected = True
+
+        self._x1 = self.x1_s.value()
+        self._x2 = self.x2_s.value()
+        self._y1 = self.y1_s.value()
+        self._y2 = self.y2_s.value()
+        self._width = self.w_s.value()
 
     def get_roi(self, image):
         if self.is_detected:
