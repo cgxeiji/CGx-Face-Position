@@ -206,7 +206,7 @@ def main():
             #cv2.putText(img, str(distance), (10, 50), visual.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             cv2.imshow("img", img)
             
-            network.set_position(cross_point[0]-ex, cross_point[1]-ey, cross_point[2]-ed, visual.get_angle())
+            network.set_position(cross_point[0] - ex, cross_point[1] - ey, (cross_point[2] - ed)*10, visual.get_angle())
 
             c = cv2.waitKey(1)
             if c == 27:
@@ -219,6 +219,7 @@ def main():
         cv2.destroyAllWindows()
         visual.stop()
         visual.join()
+        network.stop()
 
 def rotate((x, y), (h, k), angle):
     x -= h

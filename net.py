@@ -45,7 +45,12 @@ class _NetTraffic(threading.Thread):
             print("Client [{}] has connected!".format(address))
             while self.running:
                 if not self.available:
-                    self.data = self.client.recv(self.size).decode('UTF-8')
+                    self.data = ''
+                    try:
+                        self.data = self.client.recv(self.size).decode('UTF-8')
+                    except:
+                        self.client = None
+                        break
                     self.available = True
                     if self.data == 'give':
                         text = "{},{},{},{}".format(self.position[0], self.position[1], self.position[2], self.position[3])
@@ -69,6 +74,10 @@ class _NetTraffic(threading.Thread):
         self.running = False
         if self.client != None:
             self.client.close()
+        else:
+            _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            _socket.connect(('localhost', 5111))
+            _socket.close()
 
 
 class NetManager:
