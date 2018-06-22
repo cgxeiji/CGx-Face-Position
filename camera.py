@@ -11,6 +11,7 @@ import threading
 from roi import ROI
 from eye import Eye
 from smoother import Smoother
+from net import NetManager
 
 class Visual(threading.Thread):
     def __init__(self, camera):
@@ -165,14 +166,18 @@ class Visual(threading.Thread):
     def get_center(self):
         return ((self.eye_left.position()[0] + self.eye_right.position()[0]) / 2, (self.eye_left.position()[1] + self.eye_right.position()[1]) / 2, self.face_distance.value())
 
+    def get_angle(self):
+        return self.face_angle.value()
+
 
 def main():
     camera = cv2.VideoCapture(1)
 
-    
-
     visual = Visual(camera)
     visual.start()
+
+    network = NetManager()
+    network.start()
 
     cross_point = (0, 0, 0)
 
@@ -201,6 +206,7 @@ def main():
             #cv2.putText(img, str(distance), (10, 50), visual.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             cv2.imshow("img", img)
             
+            network.set_position(cross_point[0]-ex, cross_point[1]-ey, cross_point[2]-ed, visual.get_angle())
 
             c = cv2.waitKey(1)
             if c == 27:
