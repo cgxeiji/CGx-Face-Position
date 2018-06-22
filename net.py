@@ -57,7 +57,7 @@ class _NetTraffic(threading.Thread):
                         text += '\n'
                         self.client.send(text.encode('UTF-8'))
                         self.available = False
-                        time.sleep(0.05)
+                        #time.sleep(0.05)
 
     def get_client(self):
         return self.client
