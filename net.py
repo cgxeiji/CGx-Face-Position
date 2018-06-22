@@ -104,6 +104,10 @@ class NetManager:
     def set_position(self, x, y, z, a):
         self.traffic.position = (x, y, z, a)
 
+    def get_data(self):
+        (x, y, z, a) = self.traffic.position
+        return "({:.2f}, {:.2f}, {:.2f})[{:.2f}]".format(x, y, z, a)
+
     def stop(self):
         self.traffic.stop()
         self.traffic.join()

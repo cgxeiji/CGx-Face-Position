@@ -7,6 +7,7 @@ import logging
 import cv2
 import numpy as np
 import time
+import datetime
 import threading
 from roi import ROI
 from eye import Eye
@@ -208,6 +209,8 @@ def main():
             
             network.set_position(cross_point[0] - ex, cross_point[1] - ey, (cross_point[2] - ed)*10, visual.get_angle())
 
+            logging.info(network.get_data())
+
             c = cv2.waitKey(1)
             if c == 27:
                 break
@@ -244,4 +247,5 @@ def get_biggest(faces):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(format='%(levelname)s: [%(asctime)s] %(message)s', filename='{:%Y-%m-%d_%H-%M}.log'.format(datetime.datetime.now()), level=logging.INFO)
     main()
