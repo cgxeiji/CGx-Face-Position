@@ -28,6 +28,12 @@ class Visual(threading.Thread):
 
         self.face_roi = ROI(640, 480)
 
+        self.baseZ = 1
+        self.baseX = 1
+        self.baseY = 1
+        self.alpha = 1
+        self.beta = 1
+
         self.eye_right = Eye()
         self.eye_left = Eye()
 
@@ -152,11 +158,15 @@ class Visual(threading.Thread):
 
             #pt1, pt2 = self.face_roi.get_rect()
             pt1 = (10, 45)
-            hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1]), (pt1[0] + 300, pt1[1] - 45), (30, 30, 30), -1)
+            hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1] + 15), (pt1[0] + 600, pt1[1] - 45), (30, 30, 30), -1)
             text = "angle: {0:.2f} degrees".format(self.face_angle.value())
             cv2.putText(hud, text, (pt1[0], pt1[1] - 25), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             text = "distance: {0:.2f} cm [{1:.2f} pixels]".format(self.face_distance.value(), _d)
             cv2.putText(hud, text, (pt1[0], pt1[1] - 10), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
+            (_x, _y, _z) = self.get_center_pixel()
+            (__x, __y, __z) = self.get_center()
+            text = "location: {:.2f} [{:.2f}] x pixel {:.2f} [{:.2f}] y pixel".format(__x, _x, __y, _y)
+            cv2.putText(hud, text, (pt1[0], pt1[1] + 5), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
 
             self.img = hud
             self.roi = roi
@@ -164,11 +174,21 @@ class Visual(threading.Thread):
     def stop(self):
         self.running = False
     
-    def get_center(self):
+    def get_center_pixel(self):
         return ((self.eye_left.position()[0] + self.eye_right.position()[0]) / 2, (self.eye_left.position()[1] + self.eye_right.position()[1]) / 2, self.face_distance.value())
+
+    def get_center(self):
+        (x, y, z) = self.get_center_pixel();
+        return (self.get_transform(x - self.baseX, self.alpha), self.get_transform(y - self.baseY, self.beta), z)
+
+    def set_center(self):
+        (self.baseX, self.baseY, self.baseZ) = self.get_center_pixel()
 
     def get_angle(self):
         return self.face_angle.value()
+
+    def get_transform(self, pixel, value):
+        return self.face_distance.value() * pixel * value / self.baseZ
 
 
 def main():
@@ -195,7 +215,7 @@ def main():
                 img = cv2.add(img, hud)
 
             color = (0, 255, 0)
-            (ex, ey, ed) = visual.get_center()
+            (ex, ey, ed) = visual.get_center_pixel()
             distance = max([abs(cross_point[0] - ex), abs(cross_point[1]- ey), abs(cross_point[2] - ed)*10])
 
             if distance > 50:
@@ -215,7 +235,8 @@ def main():
             if c == 27:
                 break
             elif c == ord('a'):
-                cross_point = visual.get_center()
+                cross_point = visual.get_center_pixel()
+                visual.set_center()
 
 
     finally:

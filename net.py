@@ -43,6 +43,7 @@ class _NetTraffic(threading.Thread):
             print("Awaiting client...")
             self.client, address = self.socket.accept()
             print("Client [{}] has connected!".format(address))
+            self.client.sendall("Welcome to my crib!\n".encode('UTF-8'))
             while self.running:
                 if not self.available:
                     self.data = ''
@@ -55,7 +56,7 @@ class _NetTraffic(threading.Thread):
                     if self.data == 'give':
                         text = "{},{},{},{}".format(self.position[0], self.position[1], self.position[2], self.position[3])
                         text += '\n'
-                        self.client.send(text.encode('UTF-8'))
+                        self.client.sendall(text.encode('UTF-8'))
                         self.available = False
                         #time.sleep(0.05)
 
@@ -76,13 +77,13 @@ class _NetTraffic(threading.Thread):
             self.client.close()
         else:
             _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            _socket.connect(('localhost', 5111))
+            _socket.connect((socket.gethostname(), 5111))
             _socket.close()
 
 
 class NetManager:
     def __init__(self):
-        self.host = 'localhost'
+        self.host = socket.gethostname()#'192.168.0.37'
         self.port = 5111
         self.backlog = 5
         self.client_available = False
@@ -92,6 +93,7 @@ class NetManager:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.host, self.port))
         self.socket.listen(self.backlog)
+        print(socket.gethostname())
         self.traffic = _NetTraffic(self.socket)
         self.traffic.start()
 
