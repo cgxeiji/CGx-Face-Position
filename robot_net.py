@@ -20,6 +20,9 @@ class Robot:
     def set_rotation_speed(self, speed):
         self.rotation_speed = math.radians(speed)
 
+    def stop(self):
+        self.network.stop()
+
 def main():
     my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     my_socket.bind(('172.31.1.140', 30000))

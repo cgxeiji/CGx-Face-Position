@@ -227,6 +227,7 @@ def main():
     network.start()
 
     robot = Robot()
+    tracking = False
 
     cross_point = (0, 0, 0)
 
@@ -262,6 +263,8 @@ def main():
             (ex, ey, ed) = visual.get_center()
             
             network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
+            if tracking:
+                robot.move((ex*10, ey*10, ed*10), (visual.get_angle(), 0, 0))
 
             logging.info(network.get_data())
 
@@ -274,7 +277,10 @@ def main():
             elif c == ord('x'):
                 print("{},{}".format(visual.get_center(), visual.get_angle()))
             elif c == ord('z'):
-                robot.move((100, 0, 0), (30, 0, 0))
+                robot.move((0, 0, 0), (0, 0, 0))
+            elif c == ord('t'):
+                tracking = not tracking
+                print("Tracking: {}".format(tracking))
 
 
     finally:
@@ -282,6 +288,7 @@ def main():
         visual.stop()
         visual.join()
         network.stop()
+        robot.stop()
 
 def rotate((x, y), (h, k), angle):
     x -= h
