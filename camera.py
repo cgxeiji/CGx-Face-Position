@@ -15,6 +15,7 @@ from eye import Eye
 from smoother import Smoother
 from net import NetManager
 from pose_sphere import PoseSphere
+from robot_net import Robot
 
 class Visual(threading.Thread):
     def __init__(self, camera):
@@ -224,6 +225,9 @@ def main():
 
     network = NetManager()
     network.start()
+
+    robot = Robot()
+    robot.move((100, 0, 0), (30, 0, 0))
 
     cross_point = (0, 0, 0)
 

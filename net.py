@@ -28,7 +28,7 @@ class _NetSender(threading.Thread):
 
 
 class _NetTraffic(threading.Thread):
-    def __init__(self, socket):
+    def __init__(self, socket, host, port):
         threading.Thread.__init__(self)
         self.socket = socket
         self.size = 1024
@@ -36,11 +36,13 @@ class _NetTraffic(threading.Thread):
         self.client = None
         self.available = False
         self.position = (0, 0, 0, 0)
+        self.host = host
+        self.port = port
 
     def run(self):
         self.running = True
         while self.running:
-            print("Awaiting client...")
+            print("Awaiting client at [{}:{}]".format(self.host, self.port))
             self.client, address = self.socket.accept()
             print("Client [{}] has connected!".format(address))
             #self.client.sendall("Welcome to my crib!\n".encode('UTF-8'))
@@ -70,6 +72,11 @@ class _NetTraffic(threading.Thread):
     def is_available(self):
         return self.available
 
+    def send(self, msg):
+        if self.client != None:
+            msg += '\n'
+            self.client.sendall(msg.encode('UTF-8'))
+
     def stop(self):
         print("Stopping client")
         self.running = False
@@ -77,25 +84,36 @@ class _NetTraffic(threading.Thread):
             self.client.close()
         else:
             _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            _socket.connect((socket.gethostname(), 5111))
+            _socket.connect((self.host, self.port))
             _socket.close()
 
 
 class NetManager:
-    def __init__(self):
-        self.host = socket.gethostname()#'192.168.0.37'
-        self.port = 5111
+    def __init__(self, host='', port=''):
+        if host == '':
+            self.host = socket.gethostname()#'192.168.0.37'
+        else:
+            self.host = host
+        if port == '':
+            self.port = 5111
+        else:
+            self.port = port
         self.backlog = 5
         self.client_available = False
         
         
     def start(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind((self.host, self.port))
-        self.socket.listen(self.backlog)
-        print(socket.gethostname())
-        self.traffic = _NetTraffic(self.socket)
-        self.traffic.start()
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.bind((self.host, self.port))
+            self.socket.listen(self.backlog)
+            print(socket.gethostname())
+            self.traffic = _NetTraffic(self.socket, self.host, self.port)
+            self.traffic.start()
+            self.enabled = True
+        except:
+            print("Could not open {}:{}".format(self.host, self.port))
+            self.enabled = False
 
     def is_available(self):
         return self.traffic.is_available()
@@ -104,13 +122,19 @@ class NetManager:
         return self.traffic.get_data()
 
     def set_position(self, x, y, z, a):
-        self.traffic.position = (x, y, z, a)
+        if self.enabled:
+            self.traffic.position = (x, y, z, a)
 
     def get_data(self):
         (x, y, z, a) = self.traffic.position
         return "({:.2f}, {:.2f}, {:.2f})[{:.2f}]".format(x, y, z, a)
 
+    def send(self, msg):
+        if self.enabled:
+            self.traffic.send(msg)
+
     def stop(self):
-        self.traffic.stop()
-        self.traffic.join()
-        self.socket.close()
+        if self.enabled:
+            self.traffic.stop()
+            self.traffic.join()
+            self.socket.close()
