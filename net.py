@@ -129,6 +129,12 @@ class NetManager:
         (x, y, z, a) = self.traffic.position
         return "({:.2f}, {:.2f}, {:.2f})[{:.2f}]".format(x, y, z, a)
 
+    def get_client(self):
+        if self.enabled:
+            return self.traffic.get_client()
+        else:
+            return None
+
     def send(self, msg):
         if self.enabled:
             self.traffic.send(msg)

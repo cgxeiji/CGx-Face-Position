@@ -227,7 +227,6 @@ def main():
     network.start()
 
     robot = Robot()
-    robot.move((100, 0, 0), (30, 0, 0))
 
     cross_point = (0, 0, 0)
 
@@ -274,6 +273,8 @@ def main():
                 visual.set_center()
             elif c == ord('x'):
                 print("{},{}".format(visual.get_center(), visual.get_angle()))
+            elif c == ord('z'):
+                robot.move((100, 0, 0), (30, 0, 0))
 
 
     finally:
