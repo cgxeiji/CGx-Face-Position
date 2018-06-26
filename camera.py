@@ -159,7 +159,7 @@ class Visual(threading.Thread):
 
             #pt1, pt2 = self.face_roi.get_rect()
             pt1 = (10, 45)
-            hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1] + 15), (pt1[0] + 600, pt1[1] - 45), (30, 30, 30), -1)
+            hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1] + 25), (pt1[0] + 600, pt1[1] - 45), (30, 30, 30), -1)
             text = "angle: {0:.2f} degrees".format(self.face_angle.value())
             cv2.putText(hud, text, (pt1[0], pt1[1] - 25), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             text = "distance: {0:.2f} cm [{1:.2f} pixels]".format(self.face_distance.value(), _d)
@@ -233,12 +233,12 @@ def main():
             _angle = visual.get_angle()
             for pose in poses:
                 if pose.check(_pos, _angle):
-                    location = pose.name
+                    location = "{} {:.2f}s".format(pose.name, pose.get_time())
 
             cols, rows, dim = img.shape
             img = cv2.line(img, (cross_point[0], 0), (cross_point[0], cols), color)
             img = cv2.line(img, (0, cross_point[1]), (rows, cross_point[1]), color)
-            cv2.putText(img, "{}".format(location), (10, 100), visual.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
+            cv2.putText(img, "Zone: {}".format(location), (10, 65), visual.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             cv2.imshow("img", img)
 
             (ex, ey, ed) = visual.get_center()
