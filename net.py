@@ -3,6 +3,7 @@ import socket
 import json
 import threading
 import time
+import select
 
 class _NetSender(threading.Thread):
     def __init__(self, client):
@@ -45,12 +46,15 @@ class _NetTraffic(threading.Thread):
             print("Awaiting client at [{}:{}]".format(self.host, self.port))
             self.client, address = self.socket.accept()
             print("Client [{}] has connected!".format(address))
+            self.client.setblocking(0)
             #self.client.sendall("Welcome to my crib!\n".encode('UTF-8'))
             while self.running:
                 if not self.available:
                     self.data = ''
                     try:
-                        self.data = self.client.recv(self.size).decode('UTF-8')
+                        ready = select.select([self.client], [], [], 1)
+                        if ready[0]:
+                            self.data = self.client.recv(self.size).decode('UTF-8')
                     except:
                         self.client = None
                         break

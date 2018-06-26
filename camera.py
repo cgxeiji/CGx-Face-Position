@@ -231,6 +231,8 @@ def main():
 
     cross_point = (0, 0, 0)
 
+    before_time = time.time()
+
     try:
         while True:
             ret, img = camera.read()
@@ -263,8 +265,15 @@ def main():
             (ex, ey, ed) = visual.get_center()
             
             network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
-            if tracking:
-                robot.move((ex*10, ey*10, ed*10), (visual.get_angle(), 0, 0))
+            if time.time() - before_time > 0.2:
+                if tracking:
+                    ed = ed if ed > -6 else -6
+                    ed = ed if ed < 0 else 0
+                    robot.move((-ex*10, ey*10, -ed*10), (visual.get_angle(), 0, 0))
+                else:
+                    robot.move((0, 0, 0), (0, 0, 0))
+
+                before_time = time.time()
 
             logging.info(network.get_data())
 
