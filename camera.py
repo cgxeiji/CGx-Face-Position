@@ -199,6 +199,9 @@ def main():
 
     default_pose = PoseSphere('safe zone')
     test_pose = PoseSphere('test zone')
+    poses = []
+    poses.append(default_pose)
+    poses.append(test_pose)
     test_pose.set_sphere((15, 0, 30), 0, 5, 20)
 
     visual = Visual(camera)
@@ -226,13 +229,11 @@ def main():
             (ex, ey, ed) = visual.get_center_pixel()
             #distance = max([abs(cross_point[0] - ex), abs(cross_point[1]- ey), abs(cross_point[2] - ed)*10])
 
-            if default_pose.check(visual.get_center(), visual.get_angle()):
-                color = (0, 255, 0)
-                location = default_pose.name
-            
-            if test_pose.check(visual.get_center(), visual.get_angle()):
-                location = test_pose.name
-                color = (255, 0, 0)
+            _pos = visual.get_center()
+            _angle = visual.get_angle()
+            for pose in poses:
+                if pose.check(_pos, _angle):
+                    location = pose.name
 
             cols, rows, dim = img.shape
             img = cv2.line(img, (cross_point[0], 0), (cross_point[0], cols), color)
