@@ -31,8 +31,8 @@ class Visual(threading.Thread):
         self.baseZ = 1
         self.baseX = 1
         self.baseY = 1
-        self.alpha = 1
-        self.beta = 1
+        self.alpha = 0.07
+        self.beta = -0.08
 
         self.eye_right = Eye()
         self.eye_left = Eye()
@@ -192,7 +192,7 @@ class Visual(threading.Thread):
 
 
 def main():
-    camera = cv2.VideoCapture(1)
+    camera = cv2.VideoCapture(3)
 
     visual = Visual(camera)
     visual.start()
@@ -226,8 +226,10 @@ def main():
             img = cv2.line(img, (0, cross_point[1]), (rows, cross_point[1]), color)
             #cv2.putText(img, str(distance), (10, 50), visual.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             cv2.imshow("img", img)
+
+            (ex, ey, ed) = visual.get_center()
             
-            network.set_position(cross_point[0] - ex, cross_point[1] - ey, (cross_point[2] - ed)*10, visual.get_angle())
+            network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
 
             logging.info(network.get_data())
 
