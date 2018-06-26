@@ -9,6 +9,7 @@ import numpy as np
 import time
 import datetime
 import threading
+import ConfigParser
 from roi import ROI
 from eye import Eye
 from smoother import Smoother
@@ -180,7 +181,7 @@ class Visual(threading.Thread):
 
     def get_center(self):
         (x, y, z) = self.get_center_pixel();
-        return (self.get_transform(x - self.baseX, self.alpha), self.get_transform(y - self.baseY, self.beta), z)
+        return (self.get_transform(x - self.baseX, self.alpha), self.get_transform(y - self.baseY, self.beta), z - self.baseZ)
 
     def set_center(self):
         (self.baseX, self.baseY, self.baseZ) = self.get_center_pixel()
@@ -197,12 +198,26 @@ def main():
     camera.set(3, 1280)
     camera.set(4, 1024)
 
-    default_pose = PoseSphere('safe zone')
-    test_pose = PoseSphere('test zone')
+    #default_pose = PoseSphere('safe zone')
+    #test_pose = PoseSphere('test zone')
     poses = []
-    poses.append(default_pose)
-    poses.append(test_pose)
-    test_pose.set_sphere((15, 0, 30), 0, 5, 20)
+    #poses.append(default_pose)
+    #poses.append(test_pose)
+    #test_pose.set_sphere((15, 0, 0), 0, 5, 20)
+    config = ConfigParser.ConfigParser()
+    print(config)
+    config.read('poses.ini')
+    for section in config.sections():
+        print(section)
+        pose = PoseSphere(config.get(section, 'name'))
+        x = config.getfloat(section, 'x')
+        y = config.getfloat(section, 'y')
+        z = config.getfloat(section, 'z')
+        a = config.getfloat(section, 'angle')
+        dia = config.getfloat(section, 'diameter')
+        tol = config.getfloat(section, 'tolerance')
+        pose.set_sphere((x, y, z), a, dia, tol)
+        poses.append(pose)
 
     visual = Visual(camera)
     visual.start()
@@ -253,7 +268,6 @@ def main():
             elif c == ord('a'):
                 cross_point = visual.get_center_pixel()
                 visual.set_center()
-                default_pose.set_sphere(visual.get_center(), visual.get_angle())
             elif c == ord('x'):
                 print("{},{}".format(visual.get_center(), visual.get_angle()))
 
