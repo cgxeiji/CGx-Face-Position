@@ -43,7 +43,7 @@ class _NetTraffic(threading.Thread):
             print("Awaiting client...")
             self.client, address = self.socket.accept()
             print("Client [{}] has connected!".format(address))
-            self.client.sendall("Welcome to my crib!\n".encode('UTF-8'))
+            #self.client.sendall("Welcome to my crib!\n".encode('UTF-8'))
             while self.running:
                 if not self.available:
                     self.data = ''

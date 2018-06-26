@@ -13,6 +13,7 @@ from roi import ROI
 from eye import Eye
 from smoother import Smoother
 from net import NetManager
+from pose_sphere import PoseSphere
 
 class Visual(threading.Thread):
     def __init__(self, camera):
@@ -196,6 +197,10 @@ def main():
     camera.set(3, 1280)
     camera.set(4, 1024)
 
+    default_pose = PoseSphere('safe zone')
+    test_pose = PoseSphere('test zone')
+    test_pose.set_sphere((15, 0, 30), 0, 5, 20)
+
     visual = Visual(camera)
     visual.start()
 
@@ -216,17 +221,23 @@ def main():
                 img = cv2.bitwise_and(img, img, mask=cv2.bitwise_not(mask))
                 img = cv2.add(img, hud)
 
-            color = (0, 255, 0)
+            color = (0, 0, 255)
+            location = 'transition zone'
             (ex, ey, ed) = visual.get_center_pixel()
-            distance = max([abs(cross_point[0] - ex), abs(cross_point[1]- ey), abs(cross_point[2] - ed)*10])
+            #distance = max([abs(cross_point[0] - ex), abs(cross_point[1]- ey), abs(cross_point[2] - ed)*10])
 
-            if distance > 50:
-                color = (0, 0, 255)
+            if default_pose.check(visual.get_center(), visual.get_angle()):
+                color = (0, 255, 0)
+                location = default_pose.name
+            
+            if test_pose.check(visual.get_center(), visual.get_angle()):
+                location = test_pose.name
+                color = (255, 0, 0)
 
             cols, rows, dim = img.shape
             img = cv2.line(img, (cross_point[0], 0), (cross_point[0], cols), color)
             img = cv2.line(img, (0, cross_point[1]), (rows, cross_point[1]), color)
-            #cv2.putText(img, str(distance), (10, 50), visual.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
+            cv2.putText(img, "{}".format(location), (10, 100), visual.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             cv2.imshow("img", img)
 
             (ex, ey, ed) = visual.get_center()
@@ -241,6 +252,7 @@ def main():
             elif c == ord('a'):
                 cross_point = visual.get_center_pixel()
                 visual.set_center()
+                default_pose.set_sphere(visual.get_center(), visual.get_angle())
 
 
     finally:
