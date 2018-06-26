@@ -11,7 +11,7 @@ class Robot:
         self.translation_speed = 10
         self.rotation_speed = 1
 
-    def move(self,(x, y, z), (a, b, c)):
+    def move(self, (x, y, z), (a, b, c)):
         self.network.send('R,{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f}'.format(x, y, z, a, b, c, self.translation_speed, self.rotation_speed))
 
     def set_translation_speed(self, speed):

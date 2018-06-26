@@ -16,6 +16,7 @@ from smoother import Smoother
 from net import NetManager
 from pose_sphere import PoseSphere
 from robot_net import Robot
+from bridge import Bridge
 
 class Visual(threading.Thread):
     def __init__(self, camera):
@@ -210,7 +211,7 @@ def main():
     config.read('poses.ini')
     for section in config.sections():
         print(section)
-        pose = PoseSphere(config.get(section, 'name'))
+        pose = PoseSphere(section)
         x = config.getfloat(section, 'x')
         y = config.getfloat(section, 'y')
         z = config.getfloat(section, 'z')
@@ -218,8 +219,13 @@ def main():
         dia = config.getfloat(section, 'diameter')
         tol = config.getfloat(section, 'tolerance')
         pose.set_sphere((x, y, z), a, dia, tol)
-        poses.append(pose)
 
+        timer = config.getfloat(section, 'time')
+        action = config.get(section, 'action')
+        pose.set_action(action, timer)
+
+        poses.append(pose)
+    
     visual = Visual(camera)
     visual.start()
 
@@ -228,6 +234,8 @@ def main():
 
     robot = Robot()
     tracking = False
+
+    bridge = Bridge(robot)
 
     cross_point = (0, 0, 0)
 
@@ -255,6 +263,8 @@ def main():
             for pose in poses:
                 if pose.check(_pos, _angle):
                     location = "{} {:.2f}s".format(pose.name, pose.get_time())
+                    if pose.timeout():
+                        bridge.do_action(pose.action)
 
             cols, rows, dim = img.shape
             img = cv2.line(img, (cross_point[0], 0), (cross_point[0], cols), color)
