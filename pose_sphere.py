@@ -19,8 +19,5 @@ class PoseSphere:
         distance = math.sqrt(math.pow(x - self.position[0], 2) + math.pow(y - self.position[1], 2) + math.pow(z - self.position[2], 2))
         delta_angle = abs(angle - self.angle)
 
-        if self.name ==  'test zone':
-            print(distance)
-
         return (distance <= self.diameter) and (delta_angle < self.tolerance)
 

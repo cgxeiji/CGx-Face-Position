@@ -253,6 +253,8 @@ def main():
                 cross_point = visual.get_center_pixel()
                 visual.set_center()
                 default_pose.set_sphere(visual.get_center(), visual.get_angle())
+            elif c == ord('x'):
+                print("{},{}".format(visual.get_center(), visual.get_angle()))
 
 
     finally:
