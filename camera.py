@@ -26,7 +26,7 @@ class Visual(threading.Thread):
         path = os.path.join(abs_path, 'lbp/eye.xml')
         self.eyeCascade = cv2.CascadeClassifier(path)
 
-        self.face_roi = ROI(640, 480)
+        self.face_roi = ROI(1280, 1024)
 
         self.baseZ = 1
         self.baseX = 1
@@ -192,7 +192,9 @@ class Visual(threading.Thread):
 
 
 def main():
-    camera = cv2.VideoCapture(3)
+    camera = cv2.VideoCapture(1)
+    camera.set(3, 1280)
+    camera.set(4, 1024)
 
     visual = Visual(camera)
     visual.start()
