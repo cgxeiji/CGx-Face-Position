@@ -1,6 +1,7 @@
 from __future__ import print_function
 import ConfigParser
 import logging
+import threading
 from pose_sphere import PoseSphere
 
 class _Action:
@@ -16,8 +17,11 @@ class Bridge:
         self.actions = []
         self.poses = []
         self.robot = robot
+        self.default = None
+
         self.load_poses()
         self.load_actions()
+        
 
     def load_poses(self):
         config = ConfigParser.ConfigParser()
@@ -43,6 +47,9 @@ class Bridge:
             action = config.get(section, 'action')
             pose.set_action(action, timer)
 
+            if section == 'Pose Safe':
+                self.default = pose
+
             self.poses.append(pose)
 
         self.poses.sort(key=lambda x: x.priority, reverse = True)
@@ -55,7 +62,6 @@ class Bridge:
                 msg = "Pose: '{}'[{}]({}) @ [{}][{}]({}) with tol[{}] do '{}' in [{}s]".format(pose.name, pose.priority, pose.type, pose.position,pose.p2, pose.angle, pose.tolerance, pose.action, pose.timer)
             logging.info(msg)
             print(msg)
-
 
     def load_actions(self):
         config = ConfigParser.ConfigParser()
@@ -85,7 +91,8 @@ class Bridge:
                 pose_name = pose.name
                 pose_time = pose.get_time()
                 if pose.timeout():
-                    self.do_action(pose.action)
+                    self.do_action(self.default.action)
+                    threading.Timer(2.0, self.do_action, args=[pose.action]).start()
                 in_pose = True
 
         return pose_name, pose_time
