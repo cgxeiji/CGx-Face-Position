@@ -18,7 +18,7 @@ class Bridge:
 
     def load(self):
         config = ConfigParser.ConfigParser()
-        config.read('monitor.ini')
+        config.read('config/monitor.ini')
         for section in config.sections():
             print(section)
             pos = (config.getfloat(section, 'x'), config.getfloat(section, 'y'), config.getfloat(section, 'z'))

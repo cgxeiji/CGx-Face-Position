@@ -219,7 +219,7 @@ def main():
     #test_pose.set_sphere((15, 0, 0), 0, 5, 20)
     config = ConfigParser.ConfigParser()
     print(config)
-    config.read('poses.ini')
+    config.read('config/poses.ini')
     for section in config.sections():
         print(section)
         priority = config.getint(section, 'priority')
@@ -318,6 +318,7 @@ def main():
             elif c == ord('a'):
                 cross_point = visual.get_center_pixel()
                 visual.set_center()
+                logging.info("Calibration done!")
             elif c == ord('x'):
                 print("{}, {} at {}".format(visual.get_center(), visual.get_angle(), location))
             elif c == ord('z'):
@@ -327,15 +328,17 @@ def main():
                 print("Tracking: {}".format(tracking))
             elif c == ord('p'):
                 if not picture_save_enabled:
-                    picture_folder_path = '{:%Y%m%d_%H%M}'.format(datetime.datetime.now())
+                    picture_folder_path = 'frames/{:%Y%m%d_%H%M}'.format(datetime.datetime.now())
                     if not os.path.exists(picture_folder_path):
                         os.makedirs(picture_folder_path)
 
                     picture_save = PictureSaver(5, picture_folder_path)
                     picture_save.start()
+                    logging.info("Start recording!")
                 else:
                     picture_save.stop()
                     picture_save.join()
+                    logging.info("Stop recording!")
 
                 picture_save_enabled = not picture_save_enabled
 
@@ -373,5 +376,5 @@ def get_biggest(faces):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)s: [%(asctime)s] %(message)s', filename='{:%Y-%m-%d_%H-%M}.log'.format(datetime.datetime.now()), level=logging.INFO)
+    logging.basicConfig(format='%(levelname)s: [%(asctime)s] %(message)s', filename='logs/{:%Y-%m-%d_%H-%M}.log'.format(datetime.datetime.now()), level=logging.INFO)
     main()
