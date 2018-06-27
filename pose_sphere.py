@@ -1,6 +1,7 @@
 from __future__ import print_function
 import math
 import time
+import threading
 
 class PoseSphere:
     def __init__(self, name):
@@ -12,6 +13,7 @@ class PoseSphere:
         self.time_check = None
         self.timer = 0
         self.action = ''
+        self.timeout_raised = False
 
     def set_sphere(self, (x, y, z), angle, diameter=5, tolerance=10):
         self.position = (x, y, z)
@@ -33,6 +35,7 @@ class PoseSphere:
             return True
 
         self.time_check = None
+        self.timeout_raised = False
         return False
 
     def get_time(self):
@@ -43,7 +46,8 @@ class PoseSphere:
 
     def timeout(self):
         if self.timer != 0:
-            if self.get_time() >= self.timer:
+            if self.get_time() >= self.timer and not self.timeout_raised:
+                self.timeout_raised = True
                 return True
 
         return False
