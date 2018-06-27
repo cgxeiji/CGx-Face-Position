@@ -137,7 +137,7 @@ def main():
                 print("Tracking: {}".format(tracking))
             elif c == ord('p'):
                 if not picture_save_enabled:
-                    picture_folder_path = 'frames/{:%Y%m%d_%H%M}'.format(datetime.datetime.now())
+                    picture_folder_path = 'frames/{:%Y%m%d_%H%M%S}'.format(datetime.datetime.now())
                     if not os.path.exists(picture_folder_path):
                         os.makedirs(picture_folder_path)
 
