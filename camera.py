@@ -172,13 +172,13 @@ class Visual(threading.Thread):
             #pt1, pt2 = self.face_roi.get_rect()
             pt1 = (10, 45)
             hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1] + 25), (pt1[0] + 800, pt1[1] - 45), (30, 30, 30), -1)
-            text = "angle: {0:.2f} degrees                [{1:%Y-%m-%d %H:%M:%S}]".format(self.face_angle.value(), datetime.datetime.now())
+            text = "angle: {0:+06.2f} degrees                [{1:%Y-%m-%d %H:%M:%S}]".format(self.face_angle.value(), datetime.datetime.now())
             cv2.putText(hud, text, (pt1[0], pt1[1] - 25), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
-            text = "distance: {0:.2f} cm [{1:.2f} pixels]".format(self.face_distance.value(), _d)
+            text = "distance: {0:+07.2f} cm [{1:+08.2f} pixels]".format(self.face_distance.value(), _d)
             cv2.putText(hud, text, (pt1[0], pt1[1] - 10), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             (_x, _y, _z) = self.get_center_pixel()
             (__x, __y, __z) = self.get_center()
-            text = "Face({}) Eyes({}): {:.2f} [{:.2f}] x {:.2f} [{:.2f}] y {:.2f} [{:.2f}] z".format(self.face_roi.is_enabled(), self.eyes_detected, __x, _x, __y, _y, __z, _z)
+            text = "Face({}) Eyes({}): {:+08.2f} [{:+07.2f}] x {:+07.2f} [{:+07.2f}] y {:+07.2f} [{:+07.2f}] z".format(self.face_roi.is_enabled(), self.eyes_detected, __x, _x, __y, _y, __z, _z)
             cv2.putText(hud, text, (pt1[0], pt1[1] + 5), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
 
             self.img = hud
@@ -232,11 +232,11 @@ def main():
         _type = config.get(section, 'type')
 
         if _type == 'Sphere':
-            dia = config.getfloat(section, 'diameter')
-            pose.set_sphere(pos, a, dia, tol)
+            rad = config.getfloat(section, 'radius')
+            pose.set_sphere(pos, a, rad, tol)
         elif _type == 'Block':
             p2 = (config.getfloat(section, 'x2'), config.getfloat(section, 'y2'), config.getfloat(section, 'z2'))
-            pose.set_block(pos, p2, a, dia, tol)
+            pose.set_block(pos, p2, a, tol)
 
         timer = config.getfloat(section, 'time')
         action = config.get(section, 'action')
@@ -288,7 +288,7 @@ def main():
                 if in_pose:
                     pose.skip()
                 elif pose.check(_pos, _angle):
-                    location = "{} {:.2f}s".format(pose.name, pose.get_time())
+                    location = "{} {:5.2f}s".format(pose.name, pose.get_time())
                     if pose.timeout():
                         bridge.do_action(pose.action)
                     in_pose = True
