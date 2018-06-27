@@ -178,7 +178,7 @@ class Visual(threading.Thread):
             cv2.putText(hud, text, (pt1[0], pt1[1] - 10), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             (_x, _y, _z) = self.get_center_pixel()
             (__x, __y, __z) = self.get_center()
-            text = "Face({}) Eyes({}): {:+08.2f} [{:+07.2f}] x {:+07.2f} [{:+07.2f}] y {:+07.2f} [{:+07.2f}] z".format(self.face_roi.is_enabled(), self.eyes_detected, __x, _x, __y, _y, __z, _z)
+            text = "Face({}) Eyes({}): {:+08.2f} [{:+08.2f}] x {:+08.2f} [{:+08.2f}] y {:+08.2f} [{:+08.2f}] z".format(self.face_roi.is_enabled(), self.eyes_detected, __x, _x, __y, _y, __z, _z)
             cv2.putText(hud, text, (pt1[0], pt1[1] + 5), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
 
             self.img = hud
