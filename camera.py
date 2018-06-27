@@ -10,14 +10,14 @@ import time
 import datetime
 import threading
 import ConfigParser
-from roi import ROI
-from eye import Eye
-from smoother import Smoother
-from net import NetManager
-from pose_sphere import PoseSphere
-from robot_net import Robot
-from bridge import Bridge
-from saver import PictureSaver
+from libs.roi import ROI
+from libs.eye import Eye
+from libs.smoother import Smoother
+from libs.net import NetManager
+from libs.pose_sphere import PoseSphere
+from libs.robot_net import Robot
+from libs.bridge import Bridge
+from libs.saver import PictureSaver
 
 class Visual(threading.Thread):
     def __init__(self, camera):
@@ -172,13 +172,13 @@ class Visual(threading.Thread):
             #pt1, pt2 = self.face_roi.get_rect()
             pt1 = (10, 45)
             hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1] + 25), (pt1[0] + 800, pt1[1] - 45), (30, 30, 30), -1)
-            text = "angle: {0:+06.2f} degrees                [{1:%Y-%m-%d %H:%M:%S}]".format(self.face_angle.value(), datetime.datetime.now())
+            text = "angle: {:+06.2f} degrees                    [{:%Y-%m-%d %H:%M:%S}]   Face({}) Eyes({})".format(self.face_angle.value(), datetime.datetime.now(), self.face_roi.is_enabled(), self.eyes_detected)
             cv2.putText(hud, text, (pt1[0], pt1[1] - 25), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             text = "distance: {0:+07.2f} cm [{1:+08.2f} pixels]".format(self.face_distance.value(), _d)
             cv2.putText(hud, text, (pt1[0], pt1[1] - 10), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             (_x, _y, _z) = self.get_center_pixel()
             (__x, __y, __z) = self.get_center()
-            text = "Face({}) Eyes({}): {:+08.2f} [{:+08.2f}] x {:+08.2f} [{:+08.2f}] y {:+08.2f} [{:+08.2f}] z".format(self.face_roi.is_enabled(), self.eyes_detected, __x, _x, __y, _y, __z, _z)
+            text = "{:+08.2f} [{:+08.2f}] x {:+08.2f} [{:+08.2f}] y {:+08.2f} [{:+08.2f}] z".format(__x, _x, __y, _y, __z, _z)
             cv2.putText(hud, text, (pt1[0], pt1[1] + 5), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
 
             self.img = hud
@@ -337,7 +337,7 @@ def main():
                     picture_save.stop()
                     picture_save.join()
 
-                picture_save_enabled = !picture_save_enabled
+                picture_save_enabled = not picture_save_enabled
 
 
     finally:
