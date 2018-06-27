@@ -275,6 +275,7 @@ def main():
             (ex, ey, ed) = visual.get_center()
             
             network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
+            """
             if time.time() - before_time > 0.2:
                 if tracking:
                     ed = ed if ed > -6 else -6
@@ -284,7 +285,7 @@ def main():
                     robot.move((0, 0, 0), (0, 0, 0))
 
                 before_time = time.time()
-
+            """
             logging.info(network.get_data())
 
             c = cv2.waitKey(1)
