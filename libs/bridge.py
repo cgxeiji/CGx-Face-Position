@@ -1,5 +1,7 @@
 from __future__ import print_function
 import ConfigParser
+import logging
+from pose_sphere import PoseSphere
 
 class _Action:
     def __init__(self, name, (x, y, z), (a, b, c), tspeed, aspeed):
@@ -9,18 +11,56 @@ class _Action:
         self.tspeed = tspeed
         self.aspeed = aspeed
 
-
 class Bridge:
     def __init__(self, robot):
         self.actions = []
+        self.poses = []
         self.robot = robot
-        self.load()
+        self.load_poses()
+        self.load_actions()
 
-    def load(self):
+    def load_poses(self):
+        config = ConfigParser.ConfigParser()
+        config.read('config/poses.ini')
+        for section in config.sections():
+            priority = config.getint(section, 'priority')
+
+            pose = PoseSphere(section, priority)
+
+            pos = (config.getfloat(section, 'x'), config.getfloat(section, 'y'), config.getfloat(section, 'z'))
+            a = config.getfloat(section, 'angle')
+            tol = config.getfloat(section, 'tolerance')
+            _type = config.get(section, 'type')
+
+            if _type == 'Sphere':
+                rad = config.getfloat(section, 'radius')
+                pose.set_sphere(pos, a, rad, tol)
+            elif _type == 'Block':
+                p2 = (config.getfloat(section, 'x2'), config.getfloat(section, 'y2'), config.getfloat(section, 'z2'))
+                pose.set_block(pos, p2, a, tol)
+
+            timer = config.getfloat(section, 'time')
+            action = config.get(section, 'action')
+            pose.set_action(action, timer)
+
+            self.poses.append(pose)
+
+        self.poses.sort(key=lambda x: x.priority, reverse = True)
+        
+        for pose in self.poses:
+            msg = ''
+            if pose.type == 'sphere':
+                msg = "Pose: '{}'[{}]({}) @ [{}]({}) with rad[{}] tol[{}]".format(pose.name, pose.priority, pose.type, pose.position, pose.angle, pose.radius, pose.tolerance)
+            elif pose.type == 'block':
+                msg = "Pose: '{}'[{}]({}) @ [{}][{}]({}) with tol[{}]".format(pose.name, pose.priority, pose.type, pose.position,pose.p2, pose.angle, pose.tolerance)
+            logging.info(msg)
+            print(msg)
+
+
+    def load_actions(self):
         config = ConfigParser.ConfigParser()
         config.read('config/monitor.ini')
         for section in config.sections():
-            print(section)
             pos = (config.getfloat(section, 'x'), config.getfloat(section, 'y'), config.getfloat(section, 'z'))
             rot = (config.getfloat(section, 'a'), config.getfloat(section, 'b'), config.getfloat(section, 'c'))
             tspeed = config.getfloat(section, 'tspeed')
@@ -29,6 +69,28 @@ class Bridge:
             action = _Action(section, pos, rot, tspeed, aspeed)
 
             self.actions.append(action)
+
+        for action in self.actions:
+            logging.info("Action: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
+            print("Action: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
+
+    def eval(self, position, angle):
+        pose_name = ''
+        pose_time = 0
+        in_pose = False
+        for pose in self.poses:
+            if in_pose:
+                pose.skip()
+            elif pose.check(position, angle):
+                pose_name = pose.name
+                pose_time = pose.get_time()
+                if pose.timeout():
+                    self.do_action(pose.action)
+                in_pose = True
+
+        return pose_name, pose_time
+
+
 
     def do_action(self, action_name):
         for action in self.actions:

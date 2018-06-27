@@ -12,7 +12,6 @@ import threading
 import ConfigParser
 
 from libs.net import NetManager
-from libs.pose_sphere import PoseSphere
 from libs.robot_net import Robot
 from libs.bridge import Bridge
 from libs.saver import PictureSaver
@@ -24,39 +23,6 @@ def main():
     camera.set(4, 1024)
 
     picture_save_enabled = False
-
-    poses = []
-    config = ConfigParser.ConfigParser()
-    print(config)
-    config.read('config/poses.ini')
-    for section in config.sections():
-        print(section)
-        priority = config.getint(section, 'priority')
-
-        pose = PoseSphere(section, priority)
-
-        pos = (config.getfloat(section, 'x'), config.getfloat(section, 'y'), config.getfloat(section, 'z'))
-        a = config.getfloat(section, 'angle')
-        tol = config.getfloat(section, 'tolerance')
-        _type = config.get(section, 'type')
-
-        if _type == 'Sphere':
-            rad = config.getfloat(section, 'radius')
-            pose.set_sphere(pos, a, rad, tol)
-        elif _type == 'Block':
-            p2 = (config.getfloat(section, 'x2'), config.getfloat(section, 'y2'), config.getfloat(section, 'z2'))
-            pose.set_block(pos, p2, a, tol)
-
-        timer = config.getfloat(section, 'time')
-        action = config.get(section, 'action')
-        pose.set_action(action, timer)
-
-        poses.append(pose)
-
-    poses.sort(key=lambda x: x.priority, reverse = True)
-    
-    for pose in poses:
-        print("{}: {}".format(pose.priority, pose.name))
     
     visual = Visual(camera)
     visual.start()
@@ -92,15 +58,9 @@ def main():
 
             _pos = visual.get_center()
             _angle = visual.get_angle()
-            in_pose = False
-            for pose in poses:
-                if in_pose:
-                    pose.skip()
-                elif pose.check(_pos, _angle):
-                    location = "{} {:5.2f}s".format(pose.name, pose.get_time())
-                    if pose.timeout():
-                        bridge.do_action(pose.action)
-                    in_pose = True
+
+            pose_name, pose_time = bridge.eval(_pos, _angle)
+            location = "{} {:5.2f}s".format(pose_name, pose_time)
 
             cols, rows, dim = img.shape
             img = cv2.line(img, (cross_point[0], 0), (cross_point[0], cols), color)
