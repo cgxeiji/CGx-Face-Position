@@ -29,8 +29,6 @@ class PoseSphere:
         self.type = 'block'
         self.position = (max([x1, x2]), max([y1, y2]), max([z1, z2]))
         self.p2 = (min([x1, x2]), min([y1, y2]), min([z1, z2]))
-        print(self.position)
-        print(self.p2)
         self.angle = angle
         self.tolerance = tolerance
 

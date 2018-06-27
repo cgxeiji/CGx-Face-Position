@@ -50,9 +50,9 @@ class Bridge:
         for pose in self.poses:
             msg = ''
             if pose.type == 'sphere':
-                msg = "Pose: '{}'[{}]({}) @ [{}]({}) with rad[{}] tol[{}]".format(pose.name, pose.priority, pose.type, pose.position, pose.angle, pose.radius, pose.tolerance)
+                msg = "Pose: '{}'[{}]({}) @ [{}]({}) with rad[{}] tol[{}] do '{}' in [{}s]".format(pose.name, pose.priority, pose.type, pose.position, pose.angle, pose.radius, pose.tolerance, pose.action, pose.timer)
             elif pose.type == 'block':
-                msg = "Pose: '{}'[{}]({}) @ [{}][{}]({}) with tol[{}]".format(pose.name, pose.priority, pose.type, pose.position,pose.p2, pose.angle, pose.tolerance)
+                msg = "Pose: '{}'[{}]({}) @ [{}][{}]({}) with tol[{}] do '{}' in [{}s]".format(pose.name, pose.priority, pose.type, pose.position,pose.p2, pose.angle, pose.tolerance, pose.action, pose.timer)
             logging.info(msg)
             print(msg)
 
