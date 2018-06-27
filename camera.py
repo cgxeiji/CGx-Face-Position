@@ -326,13 +326,18 @@ def main():
                 tracking = not tracking
                 print("Tracking: {}".format(tracking))
             elif c == ord('p'):
-                picture_folder_path = '{:%Y%m%d_%H%M}'.format(datetime.datetime.now())
-                if not os.path.exists(picture_folder_path):
-                    os.makedirs(picture_folder_path)
+                if not picture_save_enabled:
+                    picture_folder_path = '{:%Y%m%d_%H%M}'.format(datetime.datetime.now())
+                    if not os.path.exists(picture_folder_path):
+                        os.makedirs(picture_folder_path)
 
-                picture_save = PictureSaver(1, picture_folder_path)
-                picture_save.start()
-                picture_save_enabled = True
+                    picture_save = PictureSaver(1, picture_folder_path)
+                    picture_save.start()
+                else:
+                    picture_save.stop()
+                    picture_save.join()
+
+                picture_save_enabled = !picture_save_enabled
 
 
     finally:
