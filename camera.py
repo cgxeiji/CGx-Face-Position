@@ -169,7 +169,7 @@ class Visual(threading.Thread):
             cv2.putText(hud, text, (pt1[0], pt1[1] - 10), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             (_x, _y, _z) = self.get_center_pixel()
             (__x, __y, __z) = self.get_center()
-            text = "location: {:.2f} [{:.2f}] x pixel {:.2f} [{:.2f}] y pixel".format(__x, _x, __y, _y)
+            text = "location: {:.2f} [{:.2f}] x pixel {:.2f} [{:.2f}] y pixel {:.2f} [{:.2f}] z pixel".format(__x, _x, __y, _y, __z, _z)
             cv2.putText(hud, text, (pt1[0], pt1[1] + 5), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
 
             self.img = hud
@@ -212,13 +212,16 @@ def main():
     for section in config.sections():
         print(section)
         pose = PoseSphere(section)
-        x = config.getfloat(section, 'x')
-        y = config.getfloat(section, 'y')
-        z = config.getfloat(section, 'z')
+        pos = (config.getfloat(section, 'x'), config.getfloat(section, 'y'), config.getfloat(section, 'z'))
         a = config.getfloat(section, 'angle')
         dia = config.getfloat(section, 'diameter')
         tol = config.getfloat(section, 'tolerance')
-        pose.set_sphere((x, y, z), a, dia, tol)
+        _type = config.get(section, 'type')
+        if _type == 'Sphere':
+            pose.set_sphere(pos, a, dia, tol)
+        elif _type == 'Block':
+            p2 = (config.getfloat(section, 'x2'), config.getfloat(section, 'y2'), config.getfloat(section, 'z2'))
+            pose.set_block(pos, p2, a, dia, tol)
 
         timer = config.getfloat(section, 'time')
         action = config.get(section, 'action')
