@@ -222,7 +222,7 @@ def main():
     config.read('poses.ini')
     for section in config.sections():
         print(section)
-        priority = config.getint(intection, 'priority')
+        priority = config.getint(section, 'priority')
 
         pose = PoseSphere(section, priority)
 
@@ -245,6 +245,9 @@ def main():
         poses.append(pose)
 
     poses.sort(key=lambda x: x.priority, reverse = True)
+    
+    for pose in poses:
+        print("{}: {}".format(pose.priority, pose.name))
     
     visual = Visual(camera)
     visual.start()
@@ -280,12 +283,15 @@ def main():
 
             _pos = visual.get_center()
             _angle = visual.get_angle()
+            in_pose = False
             for pose in poses:
-                if pose.check(_pos, _angle):
+                if in_pose:
+                    pose.skip()
+                elif pose.check(_pos, _angle):
                     location = "{} {:.2f}s".format(pose.name, pose.get_time())
                     if pose.timeout():
                         bridge.do_action(pose.action)
-                    break
+                    in_pose = True
 
             cols, rows, dim = img.shape
             img = cv2.line(img, (cross_point[0], 0), (cross_point[0], cols), color)

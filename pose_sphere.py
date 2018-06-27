@@ -75,3 +75,7 @@ class PoseSphere:
 
         return False
 
+    def skip(self):
+        self.time_check = None
+        self.timeout_raised = False
+
