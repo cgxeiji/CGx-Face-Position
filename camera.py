@@ -222,13 +222,17 @@ def main():
     config.read('poses.ini')
     for section in config.sections():
         print(section)
-        pose = PoseSphere(section)
+        priority = config.getint(intection, 'priority')
+
+        pose = PoseSphere(section, priority)
+
         pos = (config.getfloat(section, 'x'), config.getfloat(section, 'y'), config.getfloat(section, 'z'))
         a = config.getfloat(section, 'angle')
-        dia = config.getfloat(section, 'diameter')
         tol = config.getfloat(section, 'tolerance')
         _type = config.get(section, 'type')
+
         if _type == 'Sphere':
+            dia = config.getfloat(section, 'diameter')
             pose.set_sphere(pos, a, dia, tol)
         elif _type == 'Block':
             p2 = (config.getfloat(section, 'x2'), config.getfloat(section, 'y2'), config.getfloat(section, 'z2'))
@@ -239,6 +243,8 @@ def main():
         pose.set_action(action, timer)
 
         poses.append(pose)
+
+    poses.sort(key=lambda x: x.priority, reverse = True)
     
     visual = Visual(camera)
     visual.start()
@@ -279,6 +285,7 @@ def main():
                     location = "{} {:.2f}s".format(pose.name, pose.get_time())
                     if pose.timeout():
                         bridge.do_action(pose.action)
+                    break
 
             cols, rows, dim = img.shape
             img = cv2.line(img, (cross_point[0], 0), (cross_point[0], cols), color)

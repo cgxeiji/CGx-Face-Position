@@ -4,7 +4,7 @@ import time
 import threading
 
 class PoseSphere:
-    def __init__(self, name):
+    def __init__(self, name, priority=1):
         self.position = (0.0, 0.0, 0.0)
         self.p2 = (0.0, 0.0, 0.0)
         self.type = 'sphere'
@@ -16,6 +16,7 @@ class PoseSphere:
         self.timer = 0
         self.action = ''
         self.timeout_raised = False
+        self.priority = priority
 
     def set_sphere(self, (x, y, z), angle, diameter=5, tolerance=10):
         self.type = 'sphere'
