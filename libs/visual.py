@@ -91,7 +91,7 @@ class Visual(threading.Thread):
                         cols, rows = __roi.shape
                         M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
                         _roi = cv2.warpAffine(__roi,M,(cols,rows))
-                    faces = self.faceCascade.detectMultiScale(_roi, 1.1, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
+                    faces = self.faceCascade.detectMultiScale(_roi, 1.05, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
                     if len(faces) != 0:
                         current_angle = angle
                         #roi = _roi
@@ -117,7 +117,7 @@ class Visual(threading.Thread):
                 cols, rows, _c = roi.shape
                 min_size = tuple(int(x / 6) for x in (cols, rows))
                 max_size = tuple(int(x / 4) for x in (cols, rows))
-                eyes = self.eyeCascade.detectMultiScale(roi, 1.02, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
+                eyes = self.eyeCascade.detectMultiScale(roi, 1.01, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
 
                 if len(eyes) != 0:
                     #self.tryout = self.MAX_TRYOUTS
