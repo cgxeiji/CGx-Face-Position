@@ -28,6 +28,8 @@ class PoseSphere:
         self.type = 'block'
         self.position = (max([x1, x2]), max([y1, y2]), max([z1, z2]))
         self.p2 = (min([x1, x2]), min([y1, y2]), min([z1, z2]))
+        print(self.position)
+        print(self.p2)
         self.angle = angle
         self.diameter = diameter
         self.tolerance = tolerance
@@ -46,7 +48,7 @@ class PoseSphere:
                     self.time_check = time.time()
                 return True
         elif self.type == 'block':
-            inside = (self.p2[0] <= x <= self.position[0]) and (self.p2[1] <= x <= self.position[1]) and (self.p2[2] <= x <= self.position[2])
+            inside = (self.p2[0] <= x <= self.position[0]) and (self.p2[1] <= y <= self.position[1]) and (self.p2[2] <= z <= self.position[2])
             delta_angle = abs(angle - self.angle)
 
             if inside and (delta_angle < self.tolerance):
