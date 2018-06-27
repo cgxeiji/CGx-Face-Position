@@ -17,6 +17,7 @@ from net import NetManager
 from pose_sphere import PoseSphere
 from robot_net import Robot
 from bridge import Bridge
+from saver import PictureSaver
 
 class Visual(threading.Thread):
     def __init__(self, camera):
@@ -168,7 +169,7 @@ class Visual(threading.Thread):
             #pt1, pt2 = self.face_roi.get_rect()
             pt1 = (10, 45)
             hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1] + 25), (pt1[0] + 800, pt1[1] - 45), (30, 30, 30), -1)
-            text = "angle: {0:.2f} degrees".format(self.face_angle.value())
+            text = "angle: {0:.2f} degrees                [{1:%Y-%m-%d %H:%M:%S}]".format(self.face_angle.value(), datetime.datetime.now())
             cv2.putText(hud, text, (pt1[0], pt1[1] - 25), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             text = "distance: {0:.2f} cm [{1:.2f} pixels]".format(self.face_distance.value(), _d)
             cv2.putText(hud, text, (pt1[0], pt1[1] - 10), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
@@ -204,6 +205,13 @@ def main():
     camera = cv2.VideoCapture(1)
     camera.set(3, 1280)
     camera.set(4, 1024)
+
+    picture_folder_path = '{:%Y%m%d_%H%M}'.format(datetime.datetime.now())
+    if not os.path.exists(picture_folder_path):
+        os.makedirs(picture_folder_path)
+
+    picture_save = PictureSaver(1, picture_folder_path)
+    picture_save.start()
 
     #default_pose = PoseSphere('safe zone')
     #test_pose = PoseSphere('test zone')
@@ -283,17 +291,16 @@ def main():
             (ex, ey, ed) = visual.get_center()
             
             network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
+            
             """
-            if time.time() - before_time > 0.2:
-                if tracking:
-                    ed = ed if ed > -6 else -6
-                    ed = ed if ed < 0 else 0
-                    robot.move((-ex*10, ey*10, -ed*10), (visual.get_angle(), 0, 0))
-                else:
-                    robot.move((0, 0, 0), (0, 0, 0))
+            if time.time() - before_time > 1:
+                cv2.imwrite("{}/{}.png".format(picture_folder_path, picture_count), img)
+                picture_count += 1
 
                 before_time = time.time()
             """
+            picture_save.update(img)
+
             logging.info(network.get_data())
 
             c = cv2.waitKey(1)
@@ -313,6 +320,8 @@ def main():
 
     finally:
         cv2.destroyAllWindows()
+        picture_save.stop()
+        picture_save.join()
         visual.stop()
         visual.join()
         network.stop()
