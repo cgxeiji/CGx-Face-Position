@@ -331,7 +331,7 @@ def main():
                     if not os.path.exists(picture_folder_path):
                         os.makedirs(picture_folder_path)
 
-                    picture_save = PictureSaver(1, picture_folder_path)
+                    picture_save = PictureSaver(5, picture_folder_path)
                     picture_save.start()
                 else:
                     picture_save.stop()
