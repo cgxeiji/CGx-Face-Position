@@ -319,7 +319,7 @@ def main():
                 cross_point = visual.get_center_pixel()
                 visual.set_center()
             elif c == ord('x'):
-                print("{},{}".format(visual.get_center(), visual.get_angle()))
+                print("{}, {} at {}".format(visual.get_center(), visual.get_angle(), location))
             elif c == ord('z'):
                 robot.move((0, 0, 0), (0, 0, 0))
             elif c == ord('t'):
