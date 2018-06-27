@@ -38,6 +38,9 @@ class Visual(threading.Thread):
         self.alpha = 0.07
         self.beta = -0.08
 
+        self.face_detected = False
+        self.eyes_detected = False
+
         self.eye_right = Eye()
         self.eye_left = Eye()
 
@@ -145,9 +148,11 @@ class Visual(threading.Thread):
                         #cv2.putText(img, text, ps, font, 0.5,(255,255,255),2,cv2.LINE_AA)
 
             eyes_loc = sorted(eyes_loc, key=lambda x: x[0])
+            self.eyes_detected = False
             if len(eyes_loc) > 1:
                 self.eye_right.input(eyes_loc[0])
                 self.eye_left.input(eyes_loc[1])
+                self.eyes_detected = True
 
             hud = cv2.line(hud, self.eye_right.position(), self.eye_left.position(), (0, 255, 0))
             (rx, ry) = self.eye_right.position()
@@ -162,14 +167,14 @@ class Visual(threading.Thread):
 
             #pt1, pt2 = self.face_roi.get_rect()
             pt1 = (10, 45)
-            hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1] + 25), (pt1[0] + 600, pt1[1] - 45), (30, 30, 30), -1)
+            hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1] + 25), (pt1[0] + 800, pt1[1] - 45), (30, 30, 30), -1)
             text = "angle: {0:.2f} degrees".format(self.face_angle.value())
             cv2.putText(hud, text, (pt1[0], pt1[1] - 25), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             text = "distance: {0:.2f} cm [{1:.2f} pixels]".format(self.face_distance.value(), _d)
             cv2.putText(hud, text, (pt1[0], pt1[1] - 10), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
             (_x, _y, _z) = self.get_center_pixel()
             (__x, __y, __z) = self.get_center()
-            text = "location: {:.2f} [{:.2f}] x pixel {:.2f} [{:.2f}] y pixel {:.2f} [{:.2f}] z pixel".format(__x, _x, __y, _y, __z, _z)
+            text = "Face({}) Eyes({}): {:.2f} [{:.2f}] x {:.2f} [{:.2f}] y {:.2f} [{:.2f}] z".format(self.face_roi.is_enabled(), self.eyes_detected, __x, _x, __y, _y, __z, _z)
             cv2.putText(hud, text, (pt1[0], pt1[1] + 5), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
 
             self.img = hud
