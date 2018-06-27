@@ -52,6 +52,8 @@ def main():
                 img = cv2.add(img, hud)
 
             color = (0, 0, 255)
+            if picture_save_enabled:
+                color = (0, 255, 0)
             location = 'transition zone'
             (ex, ey, ed) = visual.get_center_pixel()
             #distance = max([abs(cross_point[0] - ex), abs(cross_point[1]- ey), abs(cross_point[2] - ed)*10])
