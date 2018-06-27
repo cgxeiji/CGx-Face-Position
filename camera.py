@@ -69,6 +69,9 @@ class Visual(threading.Thread):
         while self.running:
             ret_val, img = self.camera.read()
 
+            if img is None:
+                continue
+
             hud = np.zeros(img.shape, np.uint8)
 
             roi = self.face_roi.get_roi(img)
@@ -206,12 +209,7 @@ def main():
     camera.set(3, 1280)
     camera.set(4, 1024)
 
-    picture_folder_path = '{:%Y%m%d_%H%M}'.format(datetime.datetime.now())
-    if not os.path.exists(picture_folder_path):
-        os.makedirs(picture_folder_path)
-
-    picture_save = PictureSaver(1, picture_folder_path)
-    picture_save.start()
+    picture_save_enabled = False
 
     #default_pose = PoseSphere('safe zone')
     #test_pose = PoseSphere('test zone')
@@ -292,16 +290,14 @@ def main():
             
             network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
             
-            """
-            if time.time() - before_time > 1:
-                cv2.imwrite("{}/{}.png".format(picture_folder_path, picture_count), img)
-                picture_count += 1
+            
+            if time.time() - before_time > 0.5:
+                logging.info(network.get_data())
 
                 before_time = time.time()
-            """
-            picture_save.update(img)
-
-            logging.info(network.get_data())
+            
+            if picture_save_enabled:
+                picture_save.update(img)
 
             c = cv2.waitKey(1)
             if c == 27:
@@ -316,12 +312,21 @@ def main():
             elif c == ord('t'):
                 tracking = not tracking
                 print("Tracking: {}".format(tracking))
+            elif c == ord('p'):
+                picture_folder_path = '{:%Y%m%d_%H%M}'.format(datetime.datetime.now())
+                if not os.path.exists(picture_folder_path):
+                    os.makedirs(picture_folder_path)
+
+                picture_save = PictureSaver(1, picture_folder_path)
+                picture_save.start()
+                picture_save_enabled = True
 
 
     finally:
         cv2.destroyAllWindows()
-        picture_save.stop()
-        picture_save.join()
+        if picture_save_enabled:
+            picture_save.stop()
+            picture_save.join()
         visual.stop()
         visual.join()
         network.stop()
