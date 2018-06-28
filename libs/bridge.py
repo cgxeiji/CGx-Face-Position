@@ -12,6 +12,7 @@ class _Action:
         self.rotation = (a, b, c)
         self.tspeed = tspeed
         self.aspeed = aspeed
+        self.exe_time = 0.0
 
 class Bridge:
     def __init__(self, robot):
@@ -77,6 +78,7 @@ class Bridge:
             action = _Action(section, pos, rot, tspeed, aspeed)
 
             if 'anim' in section:
+                action.exe_time = config.getfloat(section, 'time')
                 self.animations.append(action)
             
             self.actions.append(action)
@@ -123,5 +125,5 @@ class Bridge:
     def do_animation(self):
         for action in self.animations:
             self.do_action(action.name)
-            time.sleep(1)
+            time.sleep(action.exe_time)
             
