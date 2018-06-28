@@ -50,16 +50,24 @@ class ROI(object):
         self._x1 = int(_x - w_by_c_minus_1)
         if self._x1 < 0:
             self._x1 = 0
+        if self._x1 > self._max_width:
+            self._x1 = self._max_width
         self._y1 = int(_y - w_by_c_minus_1)
         if self._y1 < 0:
             self._y1 = 0
+        if self._y1 > self._max_height:
+            self._y1 = self._max_height
 
         # Assume square shape for speed
         self._x2 = int(_x + wc)
+        if self._x2 < 0:
+            self._x2 = 0
         if self._x2 > self._max_width:
             self._x2 = self._max_width
 
         self._y2 = int(_y + wc)
+        if self._y2 < 0:
+            self._y2 = 0
         if self._y2 > self._max_height:
             self._y2 = self._max_height
 
@@ -88,7 +96,12 @@ class ROI(object):
         if self.is_detected:
             img = image[self._y1:self._y2, self._x1:self._x2]
             self._scale_factor = 120 / self._width
-            return cv2.resize(img, (0, 0), fx=self._scale_factor, fy=self._scale_factor)
+            cols, rows = img.shape[:2]
+            if cols > 0 and rows > 0:
+                return cv2.resize(img, (0, 0), fx=self._scale_factor, fy=self._scale_factor)
+            else:
+                #print("Size error! ({}, {}) in ({},{})({},{})".format(cols, rows, self._y1, self._y2, self._x1, self._x2))
+                return image
         else:
             return cv2.resize(image, (0, 0), fx=self._scale_factor, fy=self._scale_factor)
 

@@ -2,8 +2,8 @@ from smoother import Smoother
 
 class Eye:
     def __init__(self):
-        self.x = Smoother(10)
-        self.y = Smoother(10)
+        self.x = Smoother(5)
+        self.y = Smoother(5)
 
     def input(self, (x, y)):
         self.x.input(x)
