@@ -2,6 +2,7 @@ from __future__ import print_function
 import ConfigParser
 import logging
 import threading
+import time
 from pose_sphere import PoseSphere
 
 class _Action:
@@ -74,11 +75,18 @@ class Bridge:
             
             action = _Action(section, pos, rot, tspeed, aspeed)
 
+            if 'anim' in section:
+                self.animations.append(action)
+            
             self.actions.append(action)
 
         for action in self.actions:
             logging.info("Action: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
             print("Action: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
+        for action in self.animations:
+            logging.info("Animation: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
+            print("Animation: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
+
 
     def eval(self, position, angle):
         pose_name = ''
@@ -91,8 +99,11 @@ class Bridge:
                 pose_name = pose.name
                 pose_time = pose.get_time()
                 if pose.timeout():
-                    self.do_action(self.default.action)
-                    threading.Timer(2.0, self.do_action, args=[pose.action]).start()
+                    if 'anim' in pose.action:
+                        threading.Timer(0.1, self.do_animation).start()
+                    else:
+                        self.do_action(self.default.action)
+                        threading.Timer(2.0, self.do_action, args=[pose.action]).start()
                 in_pose = True
 
         return pose_name, pose_time
@@ -107,3 +118,9 @@ class Bridge:
                 self.robot.move(action.position, action.rotation)
                 print("Doing {} as robot.move({}, {})".format(action.name, action.position, action.rotation))
                 break
+ 
+    def do_animation(self):
+        for action in self.animations:
+            self.do_action(action.name)
+            time.sleep(1)
+            
