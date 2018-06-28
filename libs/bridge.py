@@ -22,6 +22,11 @@ class Bridge:
         self.robot = robot
         self.default = None
 
+        self.current_zone = ''
+        self.next_zone = ''
+        self.current_timer = 0.0
+        self.zone_timeout = 1.0
+
         self.load_poses()
         self.load_actions()
         
@@ -99,8 +104,18 @@ class Bridge:
             if in_pose:
                 pose.skip()
             elif pose.check(position, angle):
+                if pose.name != self.current_zone and self.current_zone != '':
+                    if pose.name != self.next_zone:
+                        self.current_timer = time.time()
+                        self.next_zone = pose.name
+                    pose_name = self.current_zone
+                    pose_time = -1.0
+                    if time.time() - self.current_timer < self.zone_timeout:
+                        in_pose = True
+                        continue
                 pose_name = pose.name
                 pose_time = pose.get_time()
+                self.next_zone = ''
                 if pose.timeout():
                     if 'anim' in pose.action:
                         threading.Timer(0.1, self.do_animation).start()
@@ -108,7 +123,9 @@ class Bridge:
                         self.do_action(self.default.action)
                         threading.Timer(2.0, self.do_action, args=[pose.action]).start()
                 in_pose = True
-
+                self.current_zone = pose_name
+        if pose_name == '':
+            self.current_zone = ''
         return pose_name, pose_time
 
 
