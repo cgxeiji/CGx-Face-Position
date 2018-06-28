@@ -38,8 +38,8 @@ class Visual(threading.Thread):
         self.eye_right = Eye()
         self.eye_left = Eye()
 
-        self.face_distance = Smoother(20)
-        self.face_angle = Smoother(20)
+        self.face_distance = Smoother(5)
+        self.face_angle = Smoother(5)
 
         if self.faceCascade.empty():
             raise Exception("Face Classifier not found!", path)
