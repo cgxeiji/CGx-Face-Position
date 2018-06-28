@@ -63,6 +63,9 @@ def main():
             _pos = visual.get_center()
             _angle = visual.get_angle()
 
+            pose_name = "CGx Bug"
+            pose_time = 0.0
+
             if visual.face_detected:
                 face_time = time.time()
                 face_lost = False
