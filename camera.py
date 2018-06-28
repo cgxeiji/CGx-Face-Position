@@ -18,7 +18,7 @@ from libs.saver import PictureSaver
 from libs.visual import Visual
 
 def main():
-    camera = cv2.VideoCapture(1)
+    camera = cv2.VideoCapture(0)
     camera.set(3, 1280)
     camera.set(4, 1024)
 
@@ -38,6 +38,8 @@ def main():
     cross_point = (0, 0, 0)
 
     before_time = time.time()
+    face_time = time.time()
+    face_lost = False
 
     try:
         while True:
@@ -74,7 +76,13 @@ def main():
             
             network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
             
-            
+            if visual.face_detected:
+                face_time = time.time()
+                face_lost = False
+            elif time.time() - face_time > 10.0 and not face_lost:
+                threading.Timer(0.1, bridge.do_animation).start()
+                face_lost = True
+
             if time.time() - before_time > 0.5:
                 logging.info(network.get_data())
 

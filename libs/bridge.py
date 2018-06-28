@@ -17,6 +17,7 @@ class Bridge:
     def __init__(self, robot):
         self.actions = []
         self.poses = []
+        self.animations = []
         self.robot = robot
         self.default = None
 
