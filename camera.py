@@ -63,7 +63,16 @@ def main():
             _pos = visual.get_center()
             _angle = visual.get_angle()
 
-            pose_name, pose_time = bridge.eval(_pos, _angle)
+            if visual.face_detected:
+                face_time = time.time()
+                face_lost = False
+                pose_name, pose_time = bridge.eval(_pos, _angle)
+            elif time.time() - face_time > 10.0 and not face_lost:
+                threading.Timer(0.1, bridge.do_animation).start()
+                pose_name = "Face Lost"
+                pose_time = time.time() - face_time
+                face_lost = True
+
             location = "{} {:5.2f}s".format(pose_name, pose_time)
 
             cols, rows, dim = img.shape
@@ -76,13 +85,6 @@ def main():
             
             network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
             
-            if visual.face_detected:
-                face_time = time.time()
-                face_lost = False
-            elif time.time() - face_time > 10.0 and not face_lost:
-                threading.Timer(0.1, bridge.do_animation).start()
-                face_lost = True
-
             if time.time() - before_time > 0.5:
                 logging.info(network.get_data())
 
