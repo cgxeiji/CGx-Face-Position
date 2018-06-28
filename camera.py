@@ -72,9 +72,10 @@ def main():
                 pose_name, pose_time = bridge.eval(_pos, _angle)
             elif time.time() - face_time > 10.0 and not face_lost:
                 threading.Timer(0.1, bridge.do_animation).start()
+                face_lost = True
+            else:
                 pose_name = "Face Lost"
                 pose_time = time.time() - face_time
-                face_lost = True
 
             location = "{} {:5.2f}s".format(pose_name, pose_time)
 

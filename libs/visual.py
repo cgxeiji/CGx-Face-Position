@@ -174,6 +174,8 @@ class Visual(threading.Thread):
             text = "{:+08.2f} [{:+08.2f}] x {:+08.2f} [{:+08.2f}] y {:+08.2f} [{:+08.2f}] z".format(__x, _x, __y, _y, __z, _z)
             cv2.putText(hud, text, (pt1[0], pt1[1] + 5), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
 
+            self.face_detected = self.face_roi.is_enabled()
+
             self.img = hud
             self.roi = roi
 
