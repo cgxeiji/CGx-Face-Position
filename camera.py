@@ -75,6 +75,7 @@ def main():
                 face_lost = False
                 pose_name, pose_time = bridge.eval(_pos, _angle)
             elif time.time() - face_time > 10.0 and not face_lost:
+                bridge.restart_zone_timers()
                 threading.Timer(0.1, bridge.do_animation).start()
                 face_lost = True
             else:

@@ -116,7 +116,7 @@ class Bridge:
                 pose_name = pose.name
                 pose_time = pose.get_time()
                 self.next_zone = ''
-                if self.current_zone == 'Pose Safe' and pose_name != 'Pose Safe':
+                if self.current_zone != pose_name and pose_name != 'Pose Safe':
                     self.do_action(pose.action)
                 if pose.timeout():
                     if 'anim' in pose.action:
@@ -132,7 +132,7 @@ class Bridge:
         return pose_name, pose_time
 
     def restart_zone_timers(self):
-        for pose is self.poses:
+        for pose in self.poses:
             pose.skip()
 
     def do_action(self, action_name):
