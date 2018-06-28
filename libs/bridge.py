@@ -116,7 +116,7 @@ class Bridge:
                 pose_name = pose.name
                 pose_time = pose.get_time()
                 self.next_zone = ''
-                if self.current_zone != pose_name and pose_name != 'Pose Safe':
+                if self.current_zone not in pose_name and pose_name not in 'Pose Safe' and self.current_zone not in 'Pose Safe':
                     self.do_action(pose.action)
                 if pose.timeout():
                     if 'anim' in pose.action:

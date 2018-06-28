@@ -51,7 +51,8 @@ def main():
                 try:
                     hud = visual.img
                     ret, mask = cv2.threshold(cv2.cvtColor(hud,cv2.COLOR_BGR2GRAY), 10, 255, cv2.THRESH_BINARY)
-                    img = cv2.bitwise_and(img, img, mask=cv2.bitwise_not(mask))
+                    if mask is not None:
+                        img = cv2.bitwise_and(img, img, mask=cv2.bitwise_not(mask))
                     img = cv2.add(img, hud)
                 finally:
                     pass
