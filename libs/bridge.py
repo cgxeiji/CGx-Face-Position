@@ -116,19 +116,24 @@ class Bridge:
                 pose_name = pose.name
                 pose_time = pose.get_time()
                 self.next_zone = ''
+                if self.current_zone == 'Pose Safe' and pose_name != 'Pose Safe':
+                    self.do_action(pose.action)
                 if pose.timeout():
                     if 'anim' in pose.action:
                         threading.Timer(0.1, self.do_animation).start()
                     else:
-                        self.do_action(self.default.action)
-                        threading.Timer(2.0, self.do_action, args=[pose.action]).start()
+                        #self.do_action(self.default.action)
+                        #threading.Timer(2.0, self.do_action, args=[pose.action]).start()
+                        self.do_action(pose.action)
                 in_pose = True
                 self.current_zone = pose_name
         if pose_name == '':
             self.current_zone = ''
         return pose_name, pose_time
 
-
+    def restart_zone_timers(self):
+        for pose is self.poses:
+            pose.skip()
 
     def do_action(self, action_name):
         for action in self.actions:
