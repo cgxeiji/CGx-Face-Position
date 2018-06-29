@@ -29,10 +29,11 @@ class _NetSender(threading.Thread):
 
 
 class _NetTraffic(threading.Thread):
-    def __init__(self, socket, host, port):
+    def __init__(self, server, host, port):
         threading.Thread.__init__(self)
-        self.socket = socket
-        self.size = 1024
+        self.connection_list = []
+        self.server = server
+        self.size = 4096
         self.running = False
         self.client = None
         self.available = False
@@ -43,28 +44,29 @@ class _NetTraffic(threading.Thread):
     def run(self):
         self.running = True
         while self.running:
-            print("Awaiting client at [{}:{}]".format(self.host, self.port))
-            self.client, address = self.socket.accept()
-            print("Client [{}] has connected!".format(address))
-            self.client.setblocking(0)
-            #self.client.sendall("Welcome to my crib!\n".encode('UTF-8'))
-            while self.running:
-                if not self.available:
-                    self.data = ''
+            read_sockets, write_sockets, error_sockets = select.select(self.connection_list, [], [])
+
+            for _socket in read_sockets:
+                if _socket == self.server:
+                    client, address = self.server.accept()
+                    self.connection_list.append(client)
+                    print("Client [{}] has connected!".format(address))
+                else:
                     try:
-                        ready = select.select([self.client], [], [], 1)
-                        if ready[0]:
-                            self.data = self.client.recv(self.size).decode('UTF-8')
+                        self.data = ''
+                        self.data = _socket.recv(self.size).decode('UTF-8')
+                        self.available = True
+
+                        if self.data == 'give':
+                            text = "{},{},{},{}".format(self.position[0], self.position[1], self.position[2], self.position[3])
+                            text += '\n'
+                            _socket.send(text.encode('UTF-8'))
+                            self.available = False
                     except:
-                        self.client = None
-                        break
-                    self.available = True
-                    if self.data == 'give':
-                        text = "{},{},{},{}".format(self.position[0], self.position[1], self.position[2], self.position[3])
-                        text += '\n'
-                        self.client.sendall(text.encode('UTF-8'))
-                        self.available = False
-                        #time.sleep(0.05)
+                        print("Client [{}] has disconnected!".format(1))
+                        _socket.close()
+                        self.connection_list.remove(_socket)
+                        continue
 
     def get_client(self):
         return self.client
@@ -77,9 +79,8 @@ class _NetTraffic(threading.Thread):
         return self.available
 
     def send(self, msg):
-        if self.client != None:
-            msg += '\n'
-            self.client.sendall(msg.encode('UTF-8'))
+        for _socket in self.connection_list:
+            _socket.send(msg.encode('UTF-8'))
 
     def stop(self):
         print("Stopping client")
@@ -94,6 +95,9 @@ class _NetTraffic(threading.Thread):
 
 class NetManager:
     def __init__(self, host='', port=''):
+        self.connection_list = []
+        self.buffer_size = 4096
+
         if host == '':
             self.host = socket.gethostname()#'192.168.0.37'
         else:
@@ -108,13 +112,15 @@ class NetManager:
         
     def start(self):
         try:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.bind((self.host, self.port))
-            self.socket.listen(self.backlog)
+            self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.server.bind((self.host, self.port))
+            self.server.listen(self.backlog)
             print(socket.gethostname())
-            self.traffic = _NetTraffic(self.socket, self.host, self.port)
+            self.traffic = _NetTraffic(self.server, self.host, self.port)
             self.traffic.start()
             self.enabled = True
+            print("Started server at [{}:{}]".format(self.host, self.port))
         except:
             print("Could not open {}:{}".format(self.host, self.port))
             self.enabled = False
