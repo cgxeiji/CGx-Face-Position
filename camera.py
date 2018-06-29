@@ -133,6 +133,8 @@ def main():
 
                 picture_save_enabled = not picture_save_enabled
 
+    except:
+        logging.exception("There was an error!")
 
     finally:
         cv2.destroyAllWindows()
