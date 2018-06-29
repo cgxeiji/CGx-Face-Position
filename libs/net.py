@@ -78,6 +78,7 @@ class _NetTraffic(threading.Thread):
 
     def send(self, msg):
         if self.client != None:
+            print("Sending... '{}'".format(msg))
             msg += '\n'
             self.client.sendall(msg.encode('UTF-8'))
 

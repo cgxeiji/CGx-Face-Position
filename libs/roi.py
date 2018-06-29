@@ -24,12 +24,12 @@ class ROI(object):
         self._y1 = 0
         self._y2 = 0
 
-        self.x1_s = Smoother(5)
-        self.x2_s = Smoother(5)
-        self.y1_s = Smoother(5)
-        self.y2_s = Smoother(5)
+        self.x1_s = Smoother(2)
+        self.x2_s = Smoother(2)
+        self.y1_s = Smoother(2)
+        self.y2_s = Smoother(2)
 
-        self.w_s = Smoother(5)
+        self.w_s = Smoother(2)
 
     def set_roi(self, x, y, width, height):
         # Take into account the offset of the previous ROI, if available

@@ -141,7 +141,7 @@ class Bridge:
                 self.robot.set_translation_speed(action.tspeed)
                 self.robot.set_rotation_speed(action.aspeed)
                 self.robot.move(action.position, action.rotation)
-                print("Doing {} as robot.move({}, {})".format(action.name, action.position, action.rotation))
+                print("Doing {} as robot.move({} -> {}, {} -> {})".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
                 break
  
     def do_animation(self):

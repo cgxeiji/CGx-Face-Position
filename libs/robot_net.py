@@ -8,11 +8,11 @@ class Robot:
         self.network = NetManager('172.31.1.140', 30000)
         self.network.start()
         time.sleep(1)
-        self.translation_speed = 10
-        self.rotation_speed = 1
+        self.translation_speed = 10.0
+        self.rotation_speed = 1.0
 
     def move(self, (x, y, z), (a, b, c)):
-        self.network.send('R,{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f}'.format(x, y, z, a, b, c, self.translation_speed, self.rotation_speed))
+        self.network.send('R,{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}'.format(x, y, z, a, b, c, self.translation_speed, self.rotation_speed))
 
     def set_translation_speed(self, speed):
         self.translation_speed = speed
