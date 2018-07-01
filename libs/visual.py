@@ -24,7 +24,7 @@ class Visual(threading.Thread):
         path = os.path.join(abs_path, 'lbp/eye.xml')
         self.eyeCascade = cv2.CascadeClassifier(path)
 
-        self.face_roi = ROI(1280, 1024)
+        self.face_roi = ROI(1280, 960)
 
         self.baseZ = 1
         self.baseX = 1
@@ -60,7 +60,10 @@ class Visual(threading.Thread):
     def run(self):
         self.running = True
         while self.running:
-            ret_val, img = self.camera.read()
+            self.camera.wait_for_frames()
+            img = self.camera.infrared
+            img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+            img = cv2.resize(img, (1280, 960))
 
             if img is None:
                 continue
@@ -76,7 +79,7 @@ class Visual(threading.Thread):
             if self.face_roi.is_enabled():
                 for angle in self.test_angles:
                     if angle != 0:
-                        cols, rows, _c = roi.shape
+                        cols, rows = roi.shape[:2]
                         M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
                         _roi = cv2.warpAffine(roi,M,(cols,rows))
                     faces = self.faceCascade.detectMultiScale(_roi, 1.05, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
@@ -88,7 +91,7 @@ class Visual(threading.Thread):
                 __roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
                 for angle in self.test_angles:
                     if angle != 0:
-                        cols, rows = __roi.shape
+                        cols, rows = __roi.shape[:2]
                         M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
                         _roi = cv2.warpAffine(__roi,M,(cols,rows))
                     faces = self.faceCascade.detectMultiScale(_roi, 1.05, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
@@ -114,7 +117,7 @@ class Visual(threading.Thread):
             
                 #if self.face_roi.is_enabled():
                 eyes = []
-                cols, rows, _c = roi.shape
+                cols, rows = roi.shape[:2]
                 min_size = tuple(int(x / 6) for x in (cols, rows))
                 max_size = tuple(int(x / 4) for x in (cols, rows))
                 eyes = self.eyeCascade.detectMultiScale(roi, 1.01, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)

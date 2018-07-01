@@ -11,6 +11,9 @@ import datetime
 import threading
 import ConfigParser
 
+import pyrealsense as pyrs
+from pyrealsense.constants import rs_option, rs_ivcam_preset
+
 from libs.net import NetManager
 from libs.robot_net import Robot
 from libs.bridge import Bridge
@@ -18,13 +21,17 @@ from libs.saver import PictureSaver
 from libs.visual import Visual
 
 def main():
-    camera = cv2.VideoCapture(0)
+    serv = pyrs.Service()
+    cam = serv.Device(streams = [pyrs.stream.InfraredStream()])
+    cam.apply_ivcam_preset(rs_ivcam_preset.RS_IVCAM_PRESET_FACERS_IVCAM_PRESET_DEFAULT_ANALYTICS)
+
+    camera = cv2.VideoCapture(1)
     camera.set(3, 1280)
-    camera.set(4, 1024)
+    camera.set(4, 960)
 
     picture_save_enabled = False
     
-    visual = Visual(camera)
+    visual = Visual(cam)
     visual.start()
 
     network = NetManager()
@@ -43,7 +50,15 @@ def main():
 
     try:
         while True:
+            cam.wait_for_frames()
+            _infrared = cam.infrared
+
+            cv2.imshow('Infrared', _infrared)
+
             ret, img = camera.read()
+            img = _infrared
+            img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+            img = cv2.resize(img, (1280, 960))
             #if visual.roi is not None:
             #    cv2.imshow("roi", visual.roi)
                 
@@ -85,7 +100,7 @@ def main():
 
             location = "{} {:5.2f}s".format(pose_name, pose_time)
 
-            cols, rows, dim = img.shape
+            cols, rows = img.shape[:2]
             img = cv2.line(img, (cross_point[0], 0), (cross_point[0], cols), color)
             img = cv2.line(img, (0, cross_point[1]), (rows, cross_point[1]), color)
             cv2.putText(img, "Zone: {}".format(location), (10, 65), visual.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
