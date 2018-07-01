@@ -26,7 +26,7 @@ def main():
     data_buffer = {}
     buffer_size = 4096
 
-    host = '10.0.0.79'#socket.gethostname()
+    host = '192.168.1.167'#socket.gethostname()
     port = 5000
 
     backlog = 5
