@@ -18,7 +18,7 @@ from libs.saver import PictureSaver
 from libs.visual import Visual
 
 def main():
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(2)
     camera.set(3, 1280)
     camera.set(4, 1024)
 
@@ -56,6 +56,9 @@ def main():
                     img = cv2.add(img, hud)
                 finally:
                     pass
+
+            if visual.roi is not None:
+                cv2.imshow("ROI", visual.roi)
 
 
             color = (0, 0, 255)

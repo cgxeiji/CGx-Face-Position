@@ -21,8 +21,12 @@ class Visual(threading.Thread):
         path = os.path.join(abs_path, 'lbp/frontal.xml')
         self.faceCascade = cv2.CascadeClassifier(path)
 
-        path = os.path.join(abs_path, 'lbp/eye.xml')
-        self.eyeCascade = cv2.CascadeClassifier(path)
+        path = os.path.join(abs_path, 'lbp/left1.xml')
+        self.eyeCascadeleft = cv2.CascadeClassifier(path)
+        
+        path = os.path.join(abs_path, 'lbp/right1.xml')
+        self.eyeCascaderight = cv2.CascadeClassifier(path)
+
 
         self.face_roi = ROI(1280, 1024)
 
@@ -117,7 +121,14 @@ class Visual(threading.Thread):
                 cols, rows, _c = roi.shape
                 min_size = tuple(int(x / 6) for x in (cols, rows))
                 max_size = tuple(int(x / 4) for x in (cols, rows))
-                eyes = self.eyeCascade.detectMultiScale(roi, 1.01, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
+                _left = self.eyeCascadeleft.detectMultiScale(roi, 1.01, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
+                _right = self.eyeCascaderight.detectMultiScale(roi, 1.01, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
+
+                if len(_left) > 0:
+                    eyes.append(Visual.get_foremost(_left, False))
+                if len(_right) > 0:
+                    eyes.append(Visual.get_foremost(_right, True))
+
 
                 if len(eyes) != 0:
                     #self.tryout = self.MAX_TRYOUTS
@@ -150,6 +161,8 @@ class Visual(threading.Thread):
                 self.eye_right.input(eyes_loc[0])
                 self.eye_left.input(eyes_loc[1])
                 self.eyes_detected = True
+            elif len(eyes_loc) > 0:
+                self.eye_right.input(eyes_loc[0])
 
             hud = cv2.line(hud, self.eye_right.position(), self.eye_left.position(), (0, 255, 0))
             (rx, ry) = self.eye_right.position()
@@ -219,4 +232,27 @@ class Visual(threading.Thread):
                 x = _x
                 y = _y
                 w = _w
+        return (x, y, w, w)
+
+    @staticmethod
+    def get_foremost(faces, right=True):
+        x = 0
+        y = 0
+        w = 0
+        if right:
+            x = 999
+            for (_x, _y, _w, _h) in faces:
+                if _x < x:
+                    x = _x
+                    y = _y
+                    w = _h
+        else:
+            x = 0
+            y = 0
+            w = 0
+            for (_x, _y, _w, _h) in faces:
+                if _x > x:
+                    x = _x
+                    y = _y
+                    w = _h
         return (x, y, w, w)
