@@ -2,6 +2,7 @@ from __future__ import print_function
 import socket
 import json
 import threading
+import logging
 import time
 import select
 
@@ -29,10 +30,11 @@ class _NetSender(threading.Thread):
 
 
 class _NetTraffic(threading.Thread):
-    def __init__(self, socket, host, port):
+    def __init__(self, server, host, port):
         threading.Thread.__init__(self)
-        self.socket = socket
-        self.size = 1024
+        self.connection_list = []
+        self.server = server
+        self.size = 4096
         self.running = False
         self.client = None
         self.available = False
@@ -43,28 +45,29 @@ class _NetTraffic(threading.Thread):
     def run(self):
         self.running = True
         while self.running:
-            print("Awaiting client at [{}:{}]".format(self.host, self.port))
-            self.client, address = self.socket.accept()
-            print("Client [{}] has connected!".format(address))
-            self.client.setblocking(0)
-            #self.client.sendall("Welcome to my crib!\n".encode('UTF-8'))
-            while self.running:
-                if not self.available:
-                    self.data = ''
+            read_sockets, write_sockets, error_sockets = select.select(self.connection_list, [], [])
+
+            for _socket in read_sockets:
+                if _socket == self.server:
+                    client, address = self.server.accept()
+                    self.connection_list.append(client)
+                    print("Client [{}] has connected!".format(address))
+                else:
                     try:
-                        ready = select.select([self.client], [], [], 1)
-                        if ready[0]:
-                            self.data = self.client.recv(self.size).decode('UTF-8')
+                        self.data = ''
+                        self.data = _socket.recv(self.size).decode('UTF-8')
+                        self.available = True
+
+                        if self.data == 'give':
+                            text = "{},{},{},{}".format(self.position[0], self.position[1], self.position[2], self.position[3])
+                            text += '\n'
+                            _socket.send(text.encode('UTF-8'))
+                            self.available = False
                     except:
-                        self.client = None
-                        break
-                    self.available = True
-                    if self.data == 'give':
-                        text = "{},{},{},{}".format(self.position[0], self.position[1], self.position[2], self.position[3])
-                        text += '\n'
-                        self.client.sendall(text.encode('UTF-8'))
-                        self.available = False
-                        #time.sleep(0.05)
+                        print("Client [{}] has disconnected!".format(1))
+                        _socket.close()
+                        self.connection_list.remove(_socket)
+                        continue
 
     def get_client(self):
         return self.client
@@ -77,10 +80,15 @@ class _NetTraffic(threading.Thread):
         return self.available
 
     def send(self, msg):
+<<<<<<< HEAD
         if self.client != None:
             print("Sending... '{}'".format(msg))
             msg += '\n'
             self.client.sendall(msg.encode('UTF-8'))
+=======
+        for _socket in self.connection_list:
+            _socket.send(msg.encode('UTF-8'))
+>>>>>>> network
 
     def stop(self):
         print("Stopping client")
@@ -92,9 +100,33 @@ class _NetTraffic(threading.Thread):
             _socket.connect((self.host, self.port))
             _socket.close()
 
+class Client:
+    def __init__(self, socket, name='client'):
+        self.socket = socket
+        self.name = name
+        self.address = socket.getpeername()
 
-class NetManager:
+    def print(self, text):
+        self.socket.sendall("{}".format(text).encode('UTF-8'))
+
+    def println(self, text):
+        self.socket.sendall("{}\n\r".format(text).encode('UTF-8'))
+
+    def close(self):
+        self.socket.close()
+
+    def is_owner(self, socket):
+        return self.socket is socket
+
+class NetManager(threading.Thread):
     def __init__(self, host='', port=''):
+        threading.Thread.__init__(self)
+        self.position = (0, 0, 0, 0)
+
+        self.connection_list = []
+        self.client_list = []
+        self.buffer_size = 4096
+
         if host == '':
             self.host = socket.gethostname()#'192.168.0.37'
         else:
@@ -104,48 +136,77 @@ class NetManager:
         else:
             self.port = port
         self.backlog = 5
-        self.client_available = False
+
+        self.server = None
+
+        self.running = False
         
-        
-    def start(self):
+    def run(self):
+        self.running = True
         try:
-            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.bind((self.host, self.port))
-            self.socket.listen(self.backlog)
-            print(socket.gethostname())
-            self.traffic = _NetTraffic(self.socket, self.host, self.port)
-            self.traffic.start()
-            self.enabled = True
+            self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.server.bind((self.host, self.port))
+            self.server.listen(self.backlog)
+            self.connection_list.append(self.server)
+            logging.info("Connected to {}:{}".format(socket.getfqdn(), self.port))
+            print("Connected to {}:{}".format(self.host, self.port))
+            logging.info("Waiting for clients...")
+            print("Waiting for clients...")
+
+            while self.running:
+                read_sockets, write_sockets, error_sockets = select.select(self.connection_list, [], [], 0)
+                for _socket in read_sockets:
+                    if _socket == self.server:
+                        client_socket, address = self.server.accept()
+                        self.connection_list.append(client_socket)
+                        client = Client(client_socket, "Robot Arm {}".format(len(self.client_list)))
+                        self.client_list.append(client)
+                        logging.info("Client '{}' [{}] has connected!".format(client.name, client.address))
+                        print("Client '{}' [{}] has connected!".format(client.name, client.address))
+                    else:
+                        try:
+                            data = _socket.recv(buffer_size).decode('UTF-8')
+                            client = self.get_client(_socket)
+                            if client is not None:
+                                print("From '{}': {}".format(client.name, data))
+                        except:
+                            client = self.get_client(_socket)
+                            if client is not None:
+                                name = client.name
+                                logging.info("Client '{}' [{}] has disconnected!".format(client.name, client.address))
+                                print("Client '{}' [{}] has disconnected!".format(client.name, client.address))
+                                client.close()
+                                connection_list.remove(client.socket)
+                                client_list.remove(client)
+                            continue
         except:
-            print("Could not open {}:{}".format(self.host, self.port))
-            self.enabled = False
+            logging.exception("There was an error on networking!")
+        finally:
+            self.stop()
 
-    def is_available(self):
-        return self.traffic.is_available()
+    def get_client(self, socket):
+        client = None
+        for _client in self.client_list:
+            if _client.is_owner(socket):
+                client = _client
+                break
 
-    def get_data(self):
-        return self.traffic.get_data()
+        return client
 
     def set_position(self, x, y, z, a):
-        if self.enabled:
-            self.traffic.position = (x, y, z, a)
+        self.position = (x, y, z, a)
 
     def get_data(self):
-        (x, y, z, a) = self.traffic.position
+        (x, y, z, a) = self.position
         return "({:.2f}, {:.2f}, {:.2f})[{:.2f}]".format(x, y, z, a)
 
-    def get_client(self):
-        if self.enabled:
-            return self.traffic.get_client()
-        else:
-            return None
-
     def send(self, msg):
-        if self.enabled:
-            self.traffic.send(msg)
+        for client in self.client_list:
+            client.println(msg)
 
     def stop(self):
-        if self.enabled:
-            self.traffic.stop()
-            self.traffic.join()
-            self.socket.close()
+        for client in self.client_list:
+            client.close()
+
+        self.server.close()
