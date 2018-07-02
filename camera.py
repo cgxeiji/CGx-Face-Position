@@ -96,7 +96,8 @@ def main():
             network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
             
             if time.time() - before_time > 0.5:
-                logging.info(network.get_data())
+                (x, y, z, a) = network.get_data()
+                logging.info("face_data->{:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {:.3f}".format(x, y, z, a, pose_name, pose_time))
 
                 before_time = time.time()
             
@@ -147,5 +148,5 @@ def main():
         robot.stop()
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)s: [%(asctime)s] %(message)s', filename='logs/{:%Y-%m-%d_%H-%M}.log'.format(datetime.datetime.now()), level=logging.INFO)
+    logging.basicConfig(format='%(levelname)s->%(asctime)s->%(message)s', filename='logs/{:%Y-%m-%d_%H-%M}.log'.format(datetime.datetime.now()), level=logging.INFO)
     main()
