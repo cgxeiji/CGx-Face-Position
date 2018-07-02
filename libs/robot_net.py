@@ -1,6 +1,7 @@
 from __future__ import print_function
 import time
 import math
+import logging
 from net import NetManager
 
 class Robot:
@@ -14,6 +15,7 @@ class Robot:
 
     def move(self, (x, y, z), (a, b, c)):
         self.network.send('R,{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}'.format(x, y, z, a, b, c, self.translation_speed, self.rotation_speed))
+        logging.info('monitor_data->{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}'.format(x, y, z, a, b, c, self.translation_speed, self.rotation_speed))
 
     def set_translation_speed(self, speed):
         self.translation_speed = speed

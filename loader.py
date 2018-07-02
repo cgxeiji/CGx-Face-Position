@@ -33,7 +33,8 @@ def main():
             _c = raw_input("Press enter")
 
             for data in frames:
-                network.send("{},{},{},{}".format(data[0], data[1], data[2], data[3]))
+                network.send_to("Head", "{},{},{},{}".format(data[0], data[1], data[2], data[3]))
+                network.send_to("Monitor", "{},{},{},{}".format(0, 0, 0, data[3]))
                 print("Sending: {},{},{},{}".format(data[0], data[1], data[2], data[3]))
                 time.sleep(0.1)
 

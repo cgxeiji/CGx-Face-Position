@@ -159,12 +159,19 @@ class NetManager(threading.Thread):
                         print("Client '{}' [{}] has connected!".format(client.name, client.address))
                     else:
                         try:
-                            data = _socket.recv(buffer_size).decode('UTF-8')
+                            data = _socket.recv(self.buffer_size).decode('UTF-8')
                             client = self.get_client(_socket)
                             if client is not None:
+                                if data == "":
+                                    raise
                                 print("From '{}': {}".format(client.name, data))
+                                if '$name' in data:
+                                    text = data.split(':')
+                                    client.name = text[1].strip()
+                                    print("Client '{}' [{}] changed names!".format(client.name, client.address))
                         except:
                             client = self.get_client(_socket)
+                            print(client.name)
                             if client is not None:
                                 name = client.name
                                 logging.info("Client '{}' [{}] has disconnected!".format(client.name, client.address))
@@ -196,6 +203,11 @@ class NetManager(threading.Thread):
     def send(self, msg):
         for client in self.client_list:
             client.println(msg)
+
+    def send_to(self, client_name, msg):
+        for client in self.client_list:
+            if client_name in client.name:
+                client.println(msg)
 
     def stop(self):
         for client in self.client_list:

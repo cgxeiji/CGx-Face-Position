@@ -93,11 +93,9 @@ def main():
 
             (ex, ey, ed) = visual.get_center()
             
-            network.set_position(ex*10, ey*10, ed*10, visual.get_angle())
-            
-            if time.time() - before_time > 0.5:
-                (x, y, z, a) = network.get_data()
-                logging.info("face_data->{:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {:.3f}".format(x, y, z, a, pose_name, pose_time))
+            if time.time() - before_time > 0.1:
+                (x, y, z) = visual.get_center()
+                logging.info("face_data->{:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {:.3f}".format(x, y, z, visual.get_angle(), pose_name, pose_time))
 
                 before_time = time.time()
             
