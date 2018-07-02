@@ -22,8 +22,8 @@ from libs.visual import Visual
 
 def main():
     serv = pyrs.Service()
-    cam = serv.Device(streams = [pyrs.stream.InfraredStream()])
-    cam.apply_ivcam_preset(rs_ivcam_preset.RS_IVCAM_PRESET_FACERS_IVCAM_PRESET_DEFAULT_ANALYTICS)
+    cam = serv.Device()
+    cam.apply_ivcam_preset(rs_ivcam_preset.RS_IVCAM_PRESET_FACE_ANALYTICS)
 
     camera = cv2.VideoCapture(1)
     camera.set(3, 1280)
@@ -51,13 +51,13 @@ def main():
     try:
         while True:
             cam.wait_for_frames()
-            _infrared = cam.infrared
+            _infrared = cam.color
 
             cv2.imshow('Infrared', _infrared)
 
             ret, img = camera.read()
             img = _infrared
-            img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+            img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
             img = cv2.resize(img, (1280, 960))
             #if visual.roi is not None:
             #    cv2.imshow("roi", visual.roi)

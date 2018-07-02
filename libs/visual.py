@@ -61,8 +61,9 @@ class Visual(threading.Thread):
         self.running = True
         while self.running:
             self.camera.wait_for_frames()
-            img = self.camera.infrared
-            img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+            img = self.camera.color
+            #img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+            img = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
             img = cv2.resize(img, (1280, 960))
 
             if img is None:
