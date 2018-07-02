@@ -27,15 +27,26 @@ def main():
                             face_time = datetime.strptime(sections[1], "%Y-%m-%d %H:%M:%S,%f")
                             data = sections[3].split(', ')
                             data.append(face_time)
+                            data.append('face')
                             frames.append(data)
+                        elif 'monitor_data' in sections[2]:
+                            monitor_time = datetime.strptime(sections[1], "%Y-%m-%d %H:%M:%S,%f")
+                            data = sections[3].split(', ')
+                            data.append(monitor_time)
+                            data.append('monitor')
+                            frames.append(data)
+
 
         while True:
             _c = raw_input("Press enter")
 
             for data in frames:
-                network.send_to("Head", "{},{},{},{}".format(data[0], data[1], data[2], data[3]))
-                network.send_to("Monitor", "{},{},{},{}".format(0, 0, 0, data[3]))
-                print("Sending: {},{},{},{}".format(data[0], data[1], data[2], data[3]))
+                if 'face' in data[len(data)-1]:
+                    network.send_to("Head", "{},{},{},{}".format(data[0], data[1], data[2], data[3]))
+                    print("Face: {},{},{},{}".format(data[0], data[1], data[2], data[3]))
+                elif 'monitor' in data[len(data)-1]:
+                    network.send_to("Monitor", "{},{},{},{},{},{}".format(data[0], data[1], data[2], data[3], data[4], data[5]))
+                    print("Monitor: {},{},{},{},{},{}".format(data[0], data[1], data[2], data[3], data[4], data[5]))
                 time.sleep(0.1)
 
     finally:
