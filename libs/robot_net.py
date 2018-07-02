@@ -6,7 +6,7 @@ from net import NetManager
 
 class Robot:
     def __init__(self):
-        self.network = NetManager('10.0.0.79', 30000)
+        self.network = NetManager('10.0.0.50', 30000)
         #self.network = NetManager('172.31.1.140', 30000)
         self.network.start()
         time.sleep(1)
@@ -14,8 +14,10 @@ class Robot:
         self.rotation_speed = 1.0
 
     def move(self, (x, y, z), (a, b, c)):
-        self.network.send('R,{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}'.format(x, y, z, a, b, c, self.translation_speed, self.rotation_speed))
+        self.network.send_to("Robot", 'R,{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}'.format(x, y, z, a, b, c, self.translation_speed, self.rotation_speed))
+        self.network.send_to("Monitor", "{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}".format(x, y, z, a, b, c, self.translation_speed, self.rotation_speed))
         logging.info('monitor_data->{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}'.format(x, y, z, a, b, c, self.translation_speed, self.rotation_speed))
+        
 
     def set_translation_speed(self, speed):
         self.translation_speed = speed
