@@ -26,7 +26,7 @@ def main():
     data_buffer = {}
     buffer_size = 4096
 
-    host = '192.168.1.167'#socket.gethostname()
+    host = '10.0.0.79'#socket.gethostname()
     port = 5000
 
     backlog = 5
@@ -57,6 +57,10 @@ def main():
                     try:
                         data = _socket.recv(buffer_size).decode('UTF-8')
                         client = get_client(client_list, _socket)
+                        if '$name' in data:
+                                    text = data.split(':')
+                                    client.name = text[1].strip()
+                                    print("Client '{}' [{}] changed names!".format(client.name, client.address))
                         for other_client in client_list:
                             if other_client != client:
                                 other_client.print("{} wrote: {}".format(client.name, data))
