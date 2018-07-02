@@ -80,15 +80,8 @@ class _NetTraffic(threading.Thread):
         return self.available
 
     def send(self, msg):
-<<<<<<< HEAD
-        if self.client != None:
-            print("Sending... '{}'".format(msg))
-            msg += '\n'
-            self.client.sendall(msg.encode('UTF-8'))
-=======
         for _socket in self.connection_list:
             _socket.send(msg.encode('UTF-8'))
->>>>>>> network
 
     def stop(self):
         print("Stopping client")
