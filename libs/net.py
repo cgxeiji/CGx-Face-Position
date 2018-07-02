@@ -191,8 +191,7 @@ class NetManager(threading.Thread):
         self.position = (x, y, z, a)
 
     def get_data(self):
-        (x, y, z, a) = self.position
-        return "({:.2f}, {:.2f}, {:.2f})[{:.2f}]".format(x, y, z, a)
+        return self.position
 
     def send(self, msg):
         for client in self.client_list:
