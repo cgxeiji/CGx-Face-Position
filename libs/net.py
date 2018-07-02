@@ -170,8 +170,8 @@ class NetManager(threading.Thread):
                                 logging.info("Client '{}' [{}] has disconnected!".format(client.name, client.address))
                                 print("Client '{}' [{}] has disconnected!".format(client.name, client.address))
                                 client.close()
-                                connection_list.remove(client.socket)
-                                client_list.remove(client)
+                                self.connection_list.remove(client.socket)
+                                self.client_list.remove(client)
                             continue
         except:
             logging.exception("There was an error on networking!")
