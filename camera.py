@@ -96,6 +96,7 @@ def main():
             if time.time() - before_time > 0.1:
                 (x, y, z) = visual.get_center()
                 logging.info("face_data->{:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {:.3f}".format(x, y, z, visual.get_angle(), pose_name, pose_time))
+                network.send_to("Head", "{:.3f},{:.3f},{:.3f},{:.3f}".format(x, y, z, visual.get_angle()))
 
                 before_time = time.time()
             
