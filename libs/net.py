@@ -98,7 +98,7 @@ class Client:
         self.socket = socket
         self.name = name
         self.address = socket.getpeername()
-        self.ending = '\n\r'
+        self.ending = '\n'
 
     def print(self, text):
         self.socket.sendall("{}".format(text).encode('UTF-8'))
@@ -125,7 +125,7 @@ class NetManager(threading.Thread):
         self.buffer_size = 4096
 
         if host == '':
-            self.host = socket.gethostname()#'192.168.0.37'
+            self.host = '10.0.1.43'#socket.gethostname()#'192.168.0.37'
         else:
             self.host = host
         if port == '':

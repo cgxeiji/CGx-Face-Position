@@ -6,8 +6,9 @@ from net import NetManager
 
 class Robot:
     def __init__(self):
-        self.network = NetManager('10.0.0.50', 30000)
-        #self.network = NetManager('172.31.1.140', 30000)
+        #self.network = NetManager('10.0.0.50', 30000)
+        self.network = NetManager('172.31.1.140', 30000)
+        # Subnet mask: 255.255.255.0
         self.network.start()
         time.sleep(1)
         self.translation_speed = 10.0
