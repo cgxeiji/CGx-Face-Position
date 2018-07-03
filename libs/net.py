@@ -98,12 +98,16 @@ class Client:
         self.socket = socket
         self.name = name
         self.address = socket.getpeername()
+        self.ending = '\n\r'
 
     def print(self, text):
         self.socket.sendall("{}".format(text).encode('UTF-8'))
 
     def println(self, text):
-        self.socket.sendall("{}\n\r".format(text).encode('UTF-8'))
+        self.socket.sendall("{}{}".format(text, self.ending).encode('UTF-8'))
+
+    def set_ending(self, ending):
+        self.ending = ending
 
     def close(self):
         self.socket.close()
