@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Slider, Button, RadioButtons
+import operator
 
 def main():
     try:
@@ -55,11 +56,24 @@ def main():
         z = []
         time_data = []
 
-        for frame in face_frames:
-            time_data.append(float(frame[0]))
-            x.append(float(frame[1]))
-            y.append(float(frame[2]))
-            z.append(float(frame[3]))
+        zones = {}
+
+        for datum in data:
+            time_data.append(float(datum[0]))
+            x.append(float(datum[1]))
+            y.append(float(datum[2]))
+            z.append(float(datum[3]))
+
+        for i in range(1, len(data)):
+            if data[i][5] not in zones:
+                zones[data[i][5]] = 0.0
+
+            if data[i][5] == data[i-1][5]:
+                if float(data[i][6]) != -1:
+                    zones[data[i][5]] += (float(data[i][6]) - float(data[i-1][6]))
+
+        print(zones)
+
 
         fig = plt.figure()
         ax = fig.gca(projection='3d')
@@ -94,7 +108,49 @@ def main():
         time_slider = Slider(time_ax, 'timestamp', 0, len(time_data) - 1, valinit=0)
         time_slider.on_changed(update)
 
-        
+        zones_fig, zones_ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
+
+        zones_clean = {}
+        for key, value in zones.iteritems():
+            if key not in ["Face Lost", '', "CGx Bug"]:
+                zones_clean["{}\n{:.0f}:{:02.0f}".format(key, value/60, value%60)] = value
+
+        zones_show = {}
+        recipe = []
+        data = []
+        order_flag = False
+        while len(zones_clean) > 0:
+            key = ''
+            if order_flag:
+                key = max(zones_clean.iteritems(), key=operator.itemgetter(1))[0]
+            else:
+                key = min(zones_clean.iteritems(), key=operator.itemgetter(1))[0]
+            value = zones_clean.pop(key)
+            recipe.append(key)
+            data.append(value)
+            order_flag = not order_flag
+
+        print(recipe)
+
+
+        wedges, texts = zones_ax.pie(data, wedgeprops=dict(width=0.5), startangle=-89)
+
+        bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+        kw = dict(xycoords='data', textcoords='data', arrowprops=dict(arrowstyle="-"),
+                bbox=bbox_props, zorder=0, va="center")
+
+        for i, p in enumerate(wedges):
+            ang = (p.theta2 - p.theta1)/2. + p.theta1
+            _y = np.sin(np.deg2rad(ang))
+            _x = np.cos(np.deg2rad(ang))
+            horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(_x))]
+            connectionstyle = "angle,angleA=0,angleB={}".format(ang)
+            kw["arrowprops"].update({"connectionstyle": connectionstyle})
+            zones_ax.annotate(recipe[i], xy=(_x, _y), xytext=(1.35*np.sign(_x), 1.4*_y), horizontalalignment=horizontalalignment, **kw)
+
+        zones_ax.set_title("Pose Distribution")
+        #zones_ax.legend(wedges, recipe)
+
 
         plt.show()
 
