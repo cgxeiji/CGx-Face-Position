@@ -51,19 +51,38 @@ def main():
             
             dump(writer, labels, data)
 
+        monitor_data = []
+        start_time = None
+        for frame in monitor_frames:
+            if start_time == None:
+                start_time = frame[len(frame) - 2]
+            timestamp = (frame[len(frame) - 2] - start_time).total_seconds()
+            datum = []
+            datum.append(timestamp)
+            datum.extend(frame[0:6])
+            monitor_data.append(datum)
+
         x = []
         y = []
         z = []
+        speed = []
         time_data = []
 
         zones = {}
-
+        prev_pos = np.array((0, 0, 0))
+        prev_time = 0
         for datum in data:
             time_data.append(float(datum[0]))
             x.append(float(datum[1]))
             y.append(float(datum[2]))
             z.append(float(datum[3]))
-
+            current_pos = np.array((float(datum[1]), float(datum[2]), float(datum[3])))
+            dist = np.linalg.norm(current_pos - prev_pos)
+            sp = dist/(float(datum[0]) - prev_time) if (float(datum[0]) - prev_time) != 0 else 0
+            speed.append(sp if sp < 400 else 0)
+            prev_pos = current_pos
+            prev_time = float(datum[0])
+        """
         for i in range(1, len(data)):
             if data[i][5] not in zones:
                 zones[data[i][5]] = 0.0
@@ -117,7 +136,7 @@ def main():
 
         zones_show = {}
         recipe = []
-        data = []
+        _data = []
         order_flag = False
         while len(zones_clean) > 0:
             key = ''
@@ -127,13 +146,13 @@ def main():
                 key = min(zones_clean.iteritems(), key=operator.itemgetter(1))[0]
             value = zones_clean.pop(key)
             recipe.append(key)
-            data.append(value)
+            _data.append(value)
             order_flag = not order_flag
 
         print(recipe)
 
 
-        wedges, texts = zones_ax.pie(data, wedgeprops=dict(width=0.5), startangle=-89)
+        wedges, texts = zones_ax.pie(_data, wedgeprops=dict(width=0.5), startangle=-89)
 
         bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
         kw = dict(xycoords='data', textcoords='data', arrowprops=dict(arrowstyle="-"),
@@ -150,12 +169,48 @@ def main():
 
         zones_ax.set_title("Pose Distribution")
         #zones_ax.legend(wedges, recipe)
+        """
+        _bar_text = []
+        _bar_start = []
+        _bar_end = []
+        for datum in data:
+            if len(_bar_text) > 0:
+                if datum[5] not in _bar_text[len(_bar_text) - 1]:
+                    _bar_end.append(datum[0])
+                    _bar_start.append(datum[0])
+                    _bar_text.append(datum[5])
+            else:
+                _bar_text.append(datum[5])
+                _bar_start.append(datum[0])
+
+        _bar_end.append(data[len(data) - 1][0])
+
+        _color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'lightgrey', 'Leaning right':'purple', 'Leaning left':'navy', 'Lean backward':'salmon', 'Lean forward':'saddlebrown', 'Head tilt left':'orchid', 'Head tilt right':'royalblue'}
+
+        #_color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'white', 'Leaning right':'saddlebrown', 'Leaning left':'saddlebrown', 'Lean backward':'saddlebrown', 'Lean forward':'saddlebrown', 'Head tilt left':'saddlebrown', 'Head tilt right':'saddlebrown'}
+                    
+        plt.figure()
+        fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+        for i in range(len(_bar_text)):
+            color = _color_dict[_bar_text[i]]
+            ax1.hlines(1, _bar_start[i], _bar_end[i], colors=color, lw=50)
+            # plt.text((_bar_start[i] + _bar_end[i]) / 2, 1.01, _bar_text[i], ha='center')
+
+        for datum in monitor_data:
+            color = 'blue'
+            ax1.hlines(1.02, datum[0], datum[0] + 1, colors=color, lw = 50)
+
+        # ax1.ylim(0.95, 1.05)
+
+        ax2.plot(time_data, speed, 'r')
 
 
         plt.show()
 
     finally:
         print('Finished')
+
+    # TODO: Plot horizontal bars for poses, speed line chart, and (x, y, z) line chart
 
 
 def dump(writer, labels, data):
