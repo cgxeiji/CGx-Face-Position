@@ -81,11 +81,7 @@ class NetManager(threading.Thread):
                             if client is not None:
                                 if data == "":
                                     raise
-                                print("From '{}': {}".format(client.name, data))
-                                if '$name' in data:
-                                    text = data.split(':')
-                                    client.name = text[1].strip()
-                                    print("Client '{}' [{}] changed names!".format(client.name, client.address))
+                                self._on_data_received(client, data)
                         except:
                             client = self.get_client(_socket)
                             print(client.name)
@@ -134,3 +130,10 @@ class NetManager(threading.Thread):
             client.close()
 
         self.server.close()
+
+    def on_data_received(self, client, data):
+        pass
+
+    def _on_data_received(self, client, data):
+        logging.debug("{} sent: '{}'".format(client.name, data))
+        self.on_data_received(client, data)

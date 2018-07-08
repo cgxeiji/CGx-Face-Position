@@ -10,6 +10,7 @@ import time
 import datetime
 import threading
 import ConfigParser
+import types
 
 from libs.net import NetManager
 from libs.robot_net import Robot
@@ -29,6 +30,7 @@ def main():
     visual.start()
 
     network = NetManager(gcv('unity ip', 'string'), gcv('unity port', 'int'))
+    network.on_data_received = types.MethodType(on_data_received, network)
     network.start()
 
     robot = Robot()
@@ -154,6 +156,13 @@ def main():
         visual.join()
         network.stop()
         robot.stop()
+
+def on_data_received(self, client, data):
+    print("From '{}': {}".format(client.name, data))
+    if '$name' in data:
+        text = data.split(':')
+        client.name = text[1].strip()
+        print("Client '{}' [{}] changed names!".format(client.name, client.address))
 
 if __name__ == '__main__':
     logging.basicConfig(format='%(levelname)s->%(asctime)s->%(message)s', filename='logs/{:%Y-%m-%d_%H-%M}.log'.format(datetime.datetime.now()), level=logging.INFO)
