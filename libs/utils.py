@@ -1,6 +1,8 @@
 from __future__ import print_function
+
 import ConfigParser
 import logging
+
 
 class Smoother:
     def __init__(self, size=3):
@@ -19,6 +21,7 @@ class Smoother:
     def value(self):
         return sum(self.buffer) / len(self.buffer)
 
+
 def get_config_variable(name, type=''):
     config = ConfigParser.ConfigParser()
     config.read('config/global.ini')
@@ -28,7 +31,8 @@ def get_config_variable(name, type=''):
             if name in config.options(section):
                 if config.get(section, name) == '':
                     break
-                logging.info('config_parser->{}, {}'.format(name, config.get(section, name)))
+                logging.info('config_parser->{}, {}'.format(name,
+                                                            config.get(section, name)))
                 return config.get(section, name)
 
         logging.info('config_parser->{}, {}'.format(name, 'None'))

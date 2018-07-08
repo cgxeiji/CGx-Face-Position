@@ -1,10 +1,13 @@
 from __future__ import print_function
+
 import ConfigParser
 import logging
 import threading
 import time
+
 from pose_sphere import PoseSphere
 from utils import get_config_variable as gcv
+
 
 class _Action:
     def __init__(self, name, (x, y, z), (a, b, c), tspeed, aspeed):
@@ -14,6 +17,7 @@ class _Action:
         self.tspeed = tspeed
         self.aspeed = aspeed
         self.exe_time = 0.0
+
 
 class Bridge:
     def __init__(self, robot):
@@ -32,7 +36,6 @@ class Bridge:
 
         self.load_poses()
         self.load_actions()
-        
 
     def load_poses(self):
         config = ConfigParser.ConfigParser()
@@ -42,7 +45,8 @@ class Bridge:
 
             pose = PoseSphere(section, priority)
 
-            pos = (config.getfloat(section, 'x'), config.getfloat(section, 'y'), config.getfloat(section, 'z'))
+            pos = (config.getfloat(section, 'x'), config.getfloat(
+                section, 'y'), config.getfloat(section, 'z'))
             a = config.getfloat(section, 'angle')
             tol = config.getfloat(section, 'tolerance')
             _type = config.get(section, 'type')
@@ -51,7 +55,8 @@ class Bridge:
                 rad = config.getfloat(section, 'radius')
                 pose.set_sphere(pos, a, rad, tol)
             elif _type == 'Block':
-                p2 = (config.getfloat(section, 'x2'), config.getfloat(section, 'y2'), config.getfloat(section, 'z2'))
+                p2 = (config.getfloat(section, 'x2'), config.getfloat(
+                    section, 'y2'), config.getfloat(section, 'z2'))
                 pose.set_block(pos, p2, a, tol)
 
             timer = config.getfloat(section, 'time')
@@ -63,14 +68,16 @@ class Bridge:
 
             self.poses.append(pose)
 
-        self.poses.sort(key=lambda x: x.priority, reverse = True)
-        
+        self.poses.sort(key=lambda x: x.priority, reverse=True)
+
         for pose in self.poses:
             msg = ''
             if pose.type == 'sphere':
-                msg = "Pose: '{}'[{}]({}) @ [{}]({}) with rad[{}] tol[{}] do '{}' in [{}s]".format(pose.name, pose.priority, pose.type, pose.position, pose.angle, pose.radius, pose.tolerance, pose.action, pose.timer)
+                msg = "Pose: '{}'[{}]({}) @ [{}]({}) with rad[{}] tol[{}] do '{}' in [{}s]".format(
+                    pose.name, pose.priority, pose.type, pose.position, pose.angle, pose.radius, pose.tolerance, pose.action, pose.timer)
             elif pose.type == 'block':
-                msg = "Pose: '{}'[{}]({}) @ [{}][{}]({}) with tol[{}] do '{}' in [{}s]".format(pose.name, pose.priority, pose.type, pose.position,pose.p2, pose.angle, pose.tolerance, pose.action, pose.timer)
+                msg = "Pose: '{}'[{}]({}) @ [{}][{}]({}) with tol[{}] do '{}' in [{}s]".format(
+                    pose.name, pose.priority, pose.type, pose.position, pose.p2, pose.angle, pose.tolerance, pose.action, pose.timer)
             logging.info(msg)
             print(msg)
 
@@ -78,26 +85,31 @@ class Bridge:
         config = ConfigParser.ConfigParser()
         config.read('config/monitor.ini')
         for section in config.sections():
-            pos = (config.getfloat(section, 'x'), config.getfloat(section, 'y'), config.getfloat(section, 'z'))
-            rot = (config.getfloat(section, 'a'), config.getfloat(section, 'b'), config.getfloat(section, 'c'))
+            pos = (config.getfloat(section, 'x'), config.getfloat(
+                section, 'y'), config.getfloat(section, 'z'))
+            rot = (config.getfloat(section, 'a'), config.getfloat(
+                section, 'b'), config.getfloat(section, 'c'))
             tspeed = config.getfloat(section, 'tspeed')
             aspeed = config.getfloat(section, 'aspeed')
-            
+
             action = _Action(section, pos, rot, tspeed, aspeed)
 
             if 'anim' in section:
                 action.exe_time = config.getfloat(section, 'time')
                 self.animations.append(action)
-            
+
             self.actions.append(action)
 
         for action in self.actions:
-            logging.info("Action: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
-            print("Action: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
+            logging.info("Action: '{}' @ [{} -> {}][{} -> {}]".format(
+                action.name, action.position, action.tspeed, action.rotation, action.aspeed))
+            print("Action: '{}' @ [{} -> {}][{} -> {}]".format(action.name,
+                                                               action.position, action.tspeed, action.rotation, action.aspeed))
         for action in self.animations:
-            logging.info("Animation: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
-            print("Animation: '{}' @ [{} -> {}][{} -> {}]".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
-
+            logging.info("Animation: '{}' @ [{} -> {}][{} -> {}]".format(
+                action.name, action.position, action.tspeed, action.rotation, action.aspeed))
+            print("Animation: '{}' @ [{} -> {}][{} -> {}]".format(action.name,
+                                                                  action.position, action.tspeed, action.rotation, action.aspeed))
 
     def eval(self, position, angle):
         pose_name = ''
@@ -122,7 +134,8 @@ class Bridge:
                 if (self.current_zone not in pose_name) and (pose_name not in 'Pose Safe') and (self.current_zone not in 'Pose Safe'):
                     if self.outside_safe_timer == 0.0:
                         self.outside_safe_timer = time.time()
-                    self.do_action(pose.action) # Do the next action directly if the user changes posture from bad posture to bad posture and skips good posture
+                    # Do the next action directly if the user changes posture from bad posture to bad posture and skips good posture
+                    self.do_action(pose.action)
                 if pose.timeout():
                     if 'anim' in pose.action:
                         threading.Timer(0.1, self.do_animation).start()
@@ -153,11 +166,11 @@ class Bridge:
                 self.robot.set_rotation_speed(action.aspeed)
                 self.robot.move(action.position, action.rotation)
                 logging.info("motion->{}".format(action_name))
-                print("Doing {} as robot.move({} -> {}, {} -> {})".format(action.name, action.position, action.tspeed, action.rotation, action.aspeed))
+                print("Doing {} as robot.move({} -> {}, {} -> {})".format(action.name,
+                                                                          action.position, action.tspeed, action.rotation, action.aspeed))
                 break
- 
+
     def do_animation(self):
         for action in self.animations:
             self.do_action(action.name)
             time.sleep(action.exe_time)
-            

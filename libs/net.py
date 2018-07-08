@@ -1,10 +1,12 @@
 from __future__ import print_function
-import socket
+
 import json
-import threading
 import logging
-import time
 import select
+import socket
+import threading
+import time
+
 
 class Client:
     def __init__(self, socket, name='client'):
@@ -28,6 +30,7 @@ class Client:
     def is_owner(self, socket):
         return self.socket is socket
 
+
 class NetManager(threading.Thread):
     def __init__(self, host=None, port=None):
         threading.Thread.__init__(self)
@@ -50,7 +53,7 @@ class NetManager(threading.Thread):
         self.server = None
 
         self.running = False
-        
+
     def run(self):
         self.running = True
         try:
@@ -59,24 +62,31 @@ class NetManager(threading.Thread):
             self.server.bind((self.host, self.port))
             self.server.listen(self.backlog)
             self.connection_list.append(self.server)
-            logging.info("Connected to {}:{}".format(socket.gethostbyname(self.host), self.port))
-            print("Connected to {}:{}".format(socket.gethostbyname(self.host), self.port))
+            logging.info("Connected to {}:{}".format(
+                socket.gethostbyname(self.host), self.port))
+            print("Connected to {}:{}".format(
+                socket.gethostbyname(self.host), self.port))
             logging.info("Waiting for clients...")
             print("Waiting for clients...")
 
             while self.running:
-                read_sockets, write_sockets, error_sockets = select.select(self.connection_list, [], [], 0)
+                read_sockets, write_sockets, error_sockets = select.select(
+                    self.connection_list, [], [], 0)
                 for _socket in read_sockets:
                     if _socket == self.server:
                         client_socket, address = self.server.accept()
                         self.connection_list.append(client_socket)
-                        client = Client(client_socket, "Robot Arm {}".format(len(self.client_list)))
+                        client = Client(client_socket, "Robot Arm {}".format(
+                            len(self.client_list)))
                         self.client_list.append(client)
-                        logging.info("Client '{}' [{}] has connected!".format(client.name, client.address))
-                        print("Client '{}' [{}] has connected!".format(client.name, client.address))
+                        logging.info("Client '{}' [{}] has connected!".format(
+                            client.name, client.address))
+                        print("Client '{}' [{}] has connected!".format(
+                            client.name, client.address))
                     else:
                         try:
-                            data = _socket.recv(self.buffer_size).decode('UTF-8')
+                            data = _socket.recv(
+                                self.buffer_size).decode('UTF-8')
                             client = self.get_client(_socket)
                             if client is not None:
                                 if data == "":
@@ -87,14 +97,17 @@ class NetManager(threading.Thread):
                             print(client.name)
                             if client is not None:
                                 name = client.name
-                                logging.info("Client '{}' [{}] has disconnected!".format(client.name, client.address))
-                                print("Client '{}' [{}] has disconnected!".format(client.name, client.address))
+                                logging.info("Client '{}' [{}] has disconnected!".format(
+                                    client.name, client.address))
+                                print("Client '{}' [{}] has disconnected!".format(
+                                    client.name, client.address))
                                 client.close()
                                 self.connection_list.remove(client.socket)
                                 self.client_list.remove(client)
                             continue
         except:
-            print("***** There was an error on networking! *****\n***** Check the log file! ***** ")
+            print(
+                "***** There was an error on networking! *****\n***** Check the log file! ***** ")
             logging.exception("There was an error on networking!")
         finally:
             self.stop()

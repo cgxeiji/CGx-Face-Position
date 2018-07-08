@@ -1,7 +1,9 @@
 from __future__ import print_function
+
 import math
-import time
 import threading
+import time
+
 
 class PoseSphere:
     def __init__(self, name, priority=1):
@@ -38,7 +40,8 @@ class PoseSphere:
 
     def check(self, (x, y, z), angle):
         if self.type == 'sphere':
-            distance = math.sqrt(math.pow(x - self.position[0], 2) + math.pow(y - self.position[1], 2) + math.pow(z - self.position[2], 2))
+            distance = math.sqrt(math.pow(x - self.position[0], 2) + math.pow(
+                y - self.position[1], 2) + math.pow(z - self.position[2], 2))
             delta_angle = abs(angle - self.angle)
 
             if (distance <= self.radius) and (delta_angle < self.tolerance):
@@ -46,7 +49,8 @@ class PoseSphere:
                     self.time_check = time.time()
                 return True
         elif self.type == 'block':
-            inside = (self.p2[0] <= x <= self.position[0]) and (self.p2[1] <= y <= self.position[1]) and (self.p2[2] <= z <= self.position[2])
+            inside = (self.p2[0] <= x <= self.position[0]) and (
+                self.p2[1] <= y <= self.position[1]) and (self.p2[2] <= z <= self.position[2])
             delta_angle = abs(angle - self.angle)
 
             if inside and (delta_angle < self.tolerance):
@@ -75,4 +79,3 @@ class PoseSphere:
     def skip(self):
         self.time_check = None
         self.timeout_raised = False
-

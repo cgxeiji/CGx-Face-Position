@@ -1,5 +1,6 @@
 from utils import Smoother
 
+
 class Eye:
     def __init__(self):
         self.x = Smoother(2)
@@ -14,4 +15,4 @@ class Eye:
         self.y.set(y)
 
     def position(self):
-        return (self.x.value(),self.y.value())
+        return (self.x.value(), self.y.value())

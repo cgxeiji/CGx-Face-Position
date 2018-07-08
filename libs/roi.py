@@ -1,15 +1,16 @@
 import cv2
 from utils import Smoother
 
+
 class ROI(object):
     def __init__(self, max_width, max_height):
         self.is_detected = False
-        self._margin = 0.8 # percent
+        self._margin = 0.8  # percent
         self._margin_low = 1 - self._margin
         self._margin_high = 1 + self._margin
         self._c_margin = 1 + self._margin / 2
         self._width = 0
-        
+
         self._max_width = max_width
         self._max_height = max_height
         self._mid_max_width = max_width / 2
@@ -17,7 +18,6 @@ class ROI(object):
 
         self.DEFAULT_SCALE_FACTOR = 0.8
         self._scale_factor = self.DEFAULT_SCALE_FACTOR
-        
 
         self._x1 = 0
         self._x2 = 0
@@ -118,7 +118,7 @@ class ROI(object):
     def enable(self, boolean):
         if boolean == False:
             self._scale_factor = self.DEFAULT_SCALE_FACTOR
-        self.is_detected = boolean;
+        self.is_detected = boolean
 
     def is_enabled(self):
         return self.is_detected
@@ -134,13 +134,13 @@ class ROI(object):
         y = (self._y1 + self._y2) / 2
 
         return x, y
-    
+
     def from_center(self):
         if self.is_detected:
             x = self._mid_max_width - (self._x1 + self._x2) / 2
             y = self._mid_max_height - (self._y1 + self._y2) / 2
             return x, y
-        
+
         return 0, 0
 
     def set_margin(self, margin):

@@ -1,6 +1,8 @@
 import threading
-import cv2
 import time
+
+import cv2
+
 
 class PictureSaver(threading.Thread):
     def __init__(self, timeout, path):
@@ -12,18 +14,20 @@ class PictureSaver(threading.Thread):
         self.img = None
         self.running = False
         self._scale_factor = 0.5
-    
+
     def run(self):
         self.running = True
         while self.running:
             if time.time() - self.timer > self.timeout:
                 if self.img is not None:
-                    cv2.imwrite("{}/{}.png".format(self.path, self.picture_counter), self.img)
+                    cv2.imwrite("{}/{}.png".format(self.path,
+                                                   self.picture_counter), self.img)
                     self.picture_counter += 1
                 self.timer = time.time()
 
     def update(self, img):
-        self.img = cv2.resize(img, (0, 0), fx=self._scale_factor, fy=self._scale_factor)
+        self.img = cv2.resize(
+            img, (0, 0), fx=self._scale_factor, fy=self._scale_factor)
 
     def stop(self):
         self.running = False
