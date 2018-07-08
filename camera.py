@@ -19,7 +19,7 @@ from libs.visual import Visual
 from libs.config_parser import get_config_variable as gcv
 
 def main():
-    camera = cv2.VideoCapture(1)
+    camera = cv2.VideoCapture(gcv('camera id', 'int'))
     camera.set(3, 1280)
     camera.set(4, 1024)
 
