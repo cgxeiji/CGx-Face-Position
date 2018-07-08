@@ -116,7 +116,7 @@ class Client:
         return self.socket is socket
 
 class NetManager(threading.Thread):
-    def __init__(self, host='', port=''):
+    def __init__(self, host=None, port=None):
         threading.Thread.__init__(self)
         self.position = (0, 0, 0, 0)
 
@@ -124,11 +124,11 @@ class NetManager(threading.Thread):
         self.client_list = []
         self.buffer_size = 4096
 
-        if host == '':
-            self.host = '10.0.1.43'#socket.gethostname()#'192.168.0.37'
+        if host == None:
+            self.host = socket.gethostname()
         else:
             self.host = host
-        if port == '':
+        if port == None:
             self.port = 5111
         else:
             self.port = port
@@ -146,8 +146,8 @@ class NetManager(threading.Thread):
             self.server.bind((self.host, self.port))
             self.server.listen(self.backlog)
             self.connection_list.append(self.server)
-            logging.info("Connected to {}:{}".format(socket.getfqdn(), self.port))
-            print("Connected to {}:{}".format(self.host, self.port))
+            logging.info("Connected to {}:{}".format(socket.gethostbyname(self.host), self.port))
+            print("Connected to {}:{}".format(socket.gethostbyname(self.host), self.port))
             logging.info("Waiting for clients...")
             print("Waiting for clients...")
 
@@ -185,6 +185,7 @@ class NetManager(threading.Thread):
                                 self.client_list.remove(client)
                             continue
         except:
+            print("***** There was an error on networking! *****\n***** Check the log file! ***** ")
             logging.exception("There was an error on networking!")
         finally:
             self.stop()

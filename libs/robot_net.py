@@ -3,11 +3,11 @@ import time
 import math
 import logging
 from net import NetManager
+from config_parser import get_config_variable as gcv
 
 class Robot:
     def __init__(self):
-        #self.network = NetManager('10.0.0.50', 30000)
-        self.network = NetManager('172.31.1.140', 30000)
+        self.network = NetManager(gcv('robot ip'), int(gcv('robot port')))
         # Subnet mask: 255.255.255.0
         self.network.start()
         time.sleep(1)

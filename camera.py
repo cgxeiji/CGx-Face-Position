@@ -16,9 +16,10 @@ from libs.robot_net import Robot
 from libs.bridge import Bridge
 from libs.saver import PictureSaver
 from libs.visual import Visual
+from libs.config_parser import get_config_variable as gcv
 
 def main():
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(1)
     camera.set(3, 1280)
     camera.set(4, 1024)
 
@@ -27,7 +28,7 @@ def main():
     visual = Visual(camera)
     visual.start()
 
-    network = NetManager()
+    network = NetManager(gcv('unity ip', 'string'), gcv('unity port', 'int'))
     network.start()
 
     robot = Robot()
@@ -40,6 +41,8 @@ def main():
     before_time = time.time()
     face_time = time.time()
     face_lost = False
+
+    face_lost_timeout = gcv('face lost timeout', 'float')
 
     try:
         while True:
@@ -75,7 +78,7 @@ def main():
                 face_time = time.time()
                 face_lost = False
                 pose_name, pose_time = bridge.eval(_pos, _angle)
-            elif time.time() - face_time > 10.0 and not face_lost:
+            elif time.time() - face_time > face_lost_timeout and not face_lost:
                 bridge.restart_zone_timers()
                 threading.Timer(0.1, bridge.do_animation).start()
                 face_lost = True
@@ -117,6 +120,12 @@ def main():
             elif c == ord('t'):
                 tracking = not tracking
                 print("Tracking: {}".format(tracking))
+            elif c == ord('k'):
+                print("Typing activity")
+                logging.info("Typing activity")
+            elif c == ord('r'):
+                print("Reading activity")
+                logging.info("Reading activity")
             elif c == ord('p'):
                 if not picture_save_enabled:
                     picture_folder_path = 'frames/{:%Y%m%d_%H%M%S}'.format(datetime.datetime.now())

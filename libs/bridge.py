@@ -4,6 +4,7 @@ import logging
 import threading
 import time
 from pose_sphere import PoseSphere
+from config_parser import get_config_variable as gcv
 
 class _Action:
     def __init__(self, name, (x, y, z), (a, b, c), tspeed, aspeed):
@@ -25,8 +26,9 @@ class Bridge:
         self.current_zone = ''
         self.next_zone = ''
         self.current_timer = 0.0
-        self.zone_timeout = 1.0
+        self.zone_timeout = gcv('zone timeout', 'float')
         self.outside_safe_timer = 0.0
+        self.max_outside_safe_time = gcv('max outside safe time', 'float')
 
         self.load_poses()
         self.load_actions()
@@ -127,7 +129,7 @@ class Bridge:
                     else:
                         if pose_name in 'Pose Safe':
                             if self.outside_safe_timer != 0.0:
-                                if time.time() - self.outside_safe_timer > 60:
+                                if time.time() - self.outside_safe_timer > self.max_outside_safe_time:
                                     self.do_action('Default Fast')
                                 else:
                                     self.do_action(pose.action)
