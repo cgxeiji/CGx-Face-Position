@@ -4,7 +4,7 @@ import logging
 import threading
 import time
 from pose_sphere import PoseSphere
-from config_parser import get_config_variable as gcv
+from utils import get_config_variable as gcv
 
 class _Action:
     def __init__(self, name, (x, y, z), (a, b, c), tspeed, aspeed):

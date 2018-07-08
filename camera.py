@@ -16,7 +16,7 @@ from libs.robot_net import Robot
 from libs.bridge import Bridge
 from libs.saver import PictureSaver
 from libs.visual import Visual
-from libs.config_parser import get_config_variable as gcv
+from libs.utils import get_config_variable as gcv
 
 def main():
     camera = cv2.VideoCapture(gcv('camera id', 'int'))

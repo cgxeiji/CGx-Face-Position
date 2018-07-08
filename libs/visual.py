@@ -9,7 +9,7 @@ import logging
 
 from libs.roi import ROI
 from libs.eye import Eye
-from libs.smoother import Smoother
+from libs.utils import Smoother
 
 class Visual(threading.Thread):
     def __init__(self, camera):

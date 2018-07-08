@@ -1,5 +1,5 @@
 import cv2
-from smoother import Smoother
+from utils import Smoother
 
 class ROI(object):
     def __init__(self, max_width, max_height):

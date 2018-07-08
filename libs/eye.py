@@ -1,4 +1,4 @@
-from smoother import Smoother
+from utils import Smoother
 
 class Eye:
     def __init__(self):

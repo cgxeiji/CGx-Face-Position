@@ -3,7 +3,7 @@ import time
 import math
 import logging
 from net import NetManager
-from config_parser import get_config_variable as gcv
+from utils import get_config_variable as gcv
 
 class Robot:
     def __init__(self):
