@@ -128,6 +128,8 @@ class NetManager(threading.Thread):
                 client.println(msg)
 
     def stop(self):
+        self.running = False
+
         for client in self.client_list:
             client.close()
 
