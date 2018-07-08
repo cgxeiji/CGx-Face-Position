@@ -82,7 +82,7 @@ def main():
             speed.append(sp if sp < 400 else 0)
             prev_pos = current_pos
             prev_time = float(datum[0])
-        """
+        
         for i in range(1, len(data)):
             if data[i][5] not in zones:
                 zones[data[i][5]] = 0.0
@@ -93,7 +93,7 @@ def main():
 
         print(zones)
 
-
+        """
         fig = plt.figure()
         ax = fig.gca(projection='3d')
         ax.set_xlim(-10, 10)
@@ -126,6 +126,12 @@ def main():
 
         time_slider = Slider(time_ax, 'timestamp', 0, len(time_data) - 1, valinit=0)
         time_slider.on_changed(update)
+        """
+
+        _color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'lightgrey', 'Leaning right':'purple', 'Leaning left':'navy', 'Lean backward':'salmon', 'Lean forward':'saddlebrown', 'Head tilt left':'orchid', 'Head tilt right':'royalblue'}
+        _y_dict = {'Pose Safe':0, '':0,'CGx Bug':0, 'Face Lost':1, 'Leaning right':2, 'Leaning left':3, 'Lean backward':4, 'Lean forward':5, 'Head tilt left':6, 'Head tilt right':7}
+
+        #_color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'white', 'Leaning right':'saddlebrown', 'Leaning left':'saddlebrown', 'Lean backward':'saddlebrown', 'Lean forward':'saddlebrown', 'Head tilt left':'saddlebrown', 'Head tilt right':'saddlebrown'}
 
         zones_fig, zones_ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
 
@@ -169,13 +175,13 @@ def main():
 
         zones_ax.set_title("Pose Distribution")
         #zones_ax.legend(wedges, recipe)
-        """
+        
         _bar_text = []
         _bar_start = []
         _bar_end = []
         for datum in data:
             if len(_bar_text) > 0:
-                if datum[5] not in _bar_text[len(_bar_text) - 1]:
+                if datum[5] not in 'Face Lost' and datum[5] not in _bar_text[len(_bar_text) - 1]:
                     _bar_end.append(datum[0])
                     _bar_start.append(datum[0])
                     _bar_text.append(datum[5])
@@ -185,22 +191,27 @@ def main():
 
         _bar_end.append(data[len(data) - 1][0])
 
-        _color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'lightgrey', 'Leaning right':'purple', 'Leaning left':'navy', 'Lean backward':'salmon', 'Lean forward':'saddlebrown', 'Head tilt left':'orchid', 'Head tilt right':'royalblue'}
-
-        #_color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'white', 'Leaning right':'saddlebrown', 'Leaning left':'saddlebrown', 'Lean backward':'saddlebrown', 'Lean forward':'saddlebrown', 'Head tilt left':'saddlebrown', 'Head tilt right':'saddlebrown'}
+        
                     
         plt.figure()
         fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+        ax1.set_title(sys.argv[1])
         for i in range(len(_bar_text)):
             color = _color_dict[_bar_text[i]]
-            ax1.hlines(1, _bar_start[i], _bar_end[i], colors=color, lw=50)
+            # ax1.hlines(1, _bar_start[i], _bar_end[i], colors=color, lw=40, label=_bar_text[i])
+            ax1.hlines(_y_dict[_bar_text[i]], _bar_start[i], _bar_end[i], colors=color, lw=50)
             # plt.text((_bar_start[i] + _bar_end[i]) / 2, 1.01, _bar_text[i], ha='center')
+
+        # labels = ['Monitor', 'Pose Safe', 'Leaning right', 'Leaning left', 'Lean backward', 'Lean forward', 'Head tilt left', 'Head tilt right']
+        
+        # ax1.set_yticklabels(labels)
 
         for datum in monitor_data:
             color = 'blue'
-            ax1.hlines(1.02, datum[0], datum[0] + 1, colors=color, lw = 50)
+            ax1.hlines(-1, datum[0], datum[0] + 1, colors=color, lw = 40)
 
         # ax1.ylim(0.95, 1.05)
+        plt.legend()
 
         ax2.plot(time_data, speed, 'r')
 
@@ -211,6 +222,7 @@ def main():
         print('Finished')
 
     # TODO: Plot horizontal bars for poses, speed line chart, and (x, y, z) line chart
+    # TODO: Sync the slider with video frames and graphs
 
 
 def dump(writer, labels, data):
