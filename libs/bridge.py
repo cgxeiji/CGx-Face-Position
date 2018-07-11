@@ -132,10 +132,11 @@ class Bridge:
                 pose_time = pose.get_time()
                 self.next_zone = ''
                 if (self.current_zone not in pose_name) and (pose_name not in 'Pose Safe') and (self.current_zone not in 'Pose Safe'):
-                    if self.outside_safe_timer == 0.0:
-                        self.outside_safe_timer = time.time()
                     # Do the next action directly if the user changes posture from bad posture to bad posture and skips good posture
                     self.do_action(pose.action)
+                if pose_name not in 'Pose Safe':
+                    if self.outside_safe_timer == 0.0:
+                        self.outside_safe_timer = time.time()
                 if pose.timeout():
                     if 'anim' in pose.action:
                         threading.Timer(0.1, self.do_animation).start()
@@ -146,7 +147,7 @@ class Bridge:
                                     self.do_action('Default Fast')
                                 else:
                                     self.do_action(pose.action)
-                            self.outside_safe_timer = 0.0
+                                self.outside_safe_timer = 0.0
                         else:
                             self.do_action(pose.action)
                 in_pose = True
