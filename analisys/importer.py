@@ -9,13 +9,27 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Slider, Button, RadioButtons
 import operator
+import Tkinter as tk
+import tkFileDialog as filedialog
 
 def main():
     try:
         face_frames = []
         monitor_frames = []
 
-        with open(sys.argv[1]) as file:
+        root = tk.Tk()
+        root.withdraw()
+
+        filepath = ''
+
+        if len(sys.argv) < 2:
+            filepath = filedialog.askopenfilename()
+        else:
+            filepath = sys.argv[1]
+
+        print('loading file: {}'.format(filepath))
+
+        with open(filepath) as file:
             content = file.readlines()
             content = [x.strip() for x in content]
             for line in content:
@@ -195,7 +209,7 @@ def main():
                     
         plt.figure()
         fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
-        ax1.set_title(sys.argv[1])
+        ax1.set_title(filepath)
         for i in range(len(_bar_text)):
             color = _color_dict[_bar_text[i]]
             # ax1.hlines(1, _bar_start[i], _bar_end[i], colors=color, lw=40, label=_bar_text[i])
