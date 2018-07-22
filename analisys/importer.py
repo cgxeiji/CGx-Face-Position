@@ -232,7 +232,7 @@ def main():
         for i in range(len(_bar_text)):
             color = _color_dict[_bar_text[i]]
             # ax1.hlines(1, _bar_start[i], _bar_end[i], colors=color, lw=40, label=_bar_text[i])
-            ax1.hlines(_y_dict[_bar_text[i]], _bar_start[i], _bar_end[i], colors=color, lw=50)
+            ax1.hlines(_y_dict[_bar_text[i]], _bar_start[i], _bar_end[i], colors=color, lw=20)
             # plt.text((_bar_start[i] + _bar_end[i]) / 2, 1.01, _bar_text[i], ha='center')
 
         # labels = ['Monitor', 'Pose Safe', 'Leaning right', 'Leaning left', 'Lean backward', 'Lean forward', 'Head tilt left', 'Head tilt right']
@@ -260,7 +260,7 @@ def main():
 
         for i in range(len(_monitor_text)):
             color = _color_dict[_monitor_text[i]]
-            ax1.hlines(_y_dict[_monitor_text[i]], _monitor_start[i], _monitor_end[i], colors=color, lw = 40)
+            ax1.hlines(_y_dict[_monitor_text[i]], _monitor_start[i], _monitor_end[i], colors=color, lw = 20)
 
 
         # ax1.ylim(0.95, 1.05)
