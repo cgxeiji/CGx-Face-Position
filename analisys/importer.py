@@ -240,7 +240,7 @@ def main():
         # ax1.set_yticklabels(labels)
 
         _color_dict = {'Default Position':'green', 'Default Fast':'lightgrey', 'Move forward':'purple', 'Move upward':'navy', 'Move left':'salmon', 'Move right':'saddlebrown', 'Turn clockwise':'orchid', 'Turn counter clockwise':'royalblue'}
-        _y_dict = {'Default Position':-1, 'Default Fast':-2, 'Move forward':-3, 'Move upward':-4, 'Move left':-5, 'Move right':-6, 'Turn clockwise':-7, 'Turn counter clockwise':-8}
+        _y_dict = {'Default Position':-3, 'Default Fast':-4, 'Move forward':-5, 'Move upward':-6, 'Move left':-5, 'Move right':-10, 'Turn clockwise':-9, 'Turn counter clockwise':-10}
 
         _monitor_text = []
         _monitor_start = []
@@ -261,6 +261,7 @@ def main():
         for i in range(len(_monitor_text)):
             color = _color_dict[_monitor_text[i]]
             ax1.hlines(_y_dict[_monitor_text[i]], _monitor_start[i], _monitor_end[i], colors=color, lw = 40)
+
 
         # ax1.ylim(0.95, 1.05)
         plt.legend()
