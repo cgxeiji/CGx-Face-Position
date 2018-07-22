@@ -16,11 +16,14 @@ def main():
     try:
         face_frames = []
         monitor_frames = []
+        monitor_motion = []
 
         root = tk.Tk()
         root.withdraw()
 
         filepath = ''
+
+        print('select a file to analyze')
 
         if len(sys.argv) < 2:
             filepath = filedialog.askopenfilename()
@@ -48,6 +51,14 @@ def main():
                             data.append(monitor_time)
                             data.append('monitor')
                             monitor_frames.append(data)
+                        elif 'motion' in sections[2]:
+                            motion_time = datetime.strptime(sections[1], "%Y-%m-%d %H:%M:%S,%f")
+                            data = [str(sections[3])]
+                            data.append(motion_time)
+                            data.append('motion')
+                            monitor_motion.append(data)
+
+        print('data loaded\nProcessing data...')
 
         with open('face_data.csv', 'wb') as csv_file:
             writer = csv.writer(csv_file)
@@ -65,16 +76,23 @@ def main():
             
             dump(writer, labels, data)
 
+        print('... created *.csv file')
+
         monitor_data = []
+        monitor_labels = {'Default Position':0, 'Default Fast':-1, 'Move forward':-2, 'Move upward':-3, 'Move left':-4, 'Move right':-5, 'Turn clockwise':-6, 'Turn counter clockwise':-7}
         start_time = None
-        for frame in monitor_frames:
+        for frame in monitor_motion:
+            if not monitor_labels.has_key(frame[0]):
+                continue
             if start_time == None:
                 start_time = frame[len(frame) - 2]
             timestamp = (frame[len(frame) - 2] - start_time).total_seconds()
             datum = []
             datum.append(timestamp)
-            datum.extend(frame[0:6])
+            datum.append(frame[0])
             monitor_data.append(datum)
+
+        print('... monitor motion')
 
         x = []
         y = []
@@ -105,7 +123,7 @@ def main():
                 if float(data[i][6]) != -1:
                     zones[data[i][5]] += (float(data[i][6]) - float(data[i-1][6]))
 
-        print(zones)
+        print('... face zones')
 
         """
         fig = plt.figure()
@@ -142,6 +160,8 @@ def main():
         time_slider.on_changed(update)
         """
 
+        print('... computing times')
+
         _color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'lightgrey', 'Leaning right':'purple', 'Leaning left':'navy', 'Lean backward':'salmon', 'Lean forward':'saddlebrown', 'Head tilt left':'orchid', 'Head tilt right':'royalblue'}
         _y_dict = {'Pose Safe':0, '':0,'CGx Bug':0, 'Face Lost':1, 'Leaning right':2, 'Leaning left':3, 'Lean backward':4, 'Lean forward':5, 'Head tilt left':6, 'Head tilt right':7}
 
@@ -169,8 +189,7 @@ def main():
             _data.append(value)
             order_flag = not order_flag
 
-        print(recipe)
-
+        print('... plotting')
 
         wedges, texts = zones_ax.pie(_data, wedgeprops=dict(width=0.5), startangle=-89)
 
@@ -220,15 +239,35 @@ def main():
         
         # ax1.set_yticklabels(labels)
 
+        _color_dict = {'Default Position':'green', 'Default Fast':'lightgrey', 'Move forward':'purple', 'Move upward':'navy', 'Move left':'salmon', 'Move right':'saddlebrown', 'Turn clockwise':'orchid', 'Turn counter clockwise':'royalblue'}
+        _y_dict = {'Default Position':-1, 'Default Fast':-2, 'Move forward':-3, 'Move upward':-4, 'Move left':-5, 'Move right':-6, 'Turn clockwise':-7, 'Turn counter clockwise':-8}
+
+        _monitor_text = []
+        _monitor_start = []
+        _monitor_end = []
+        
         for datum in monitor_data:
-            color = 'blue'
-            ax1.hlines(-1, datum[0], datum[0] + 1, colors=color, lw = 40)
+            if len(_monitor_text) > 0:
+                if datum[1] not in _monitor_text[len(_monitor_text) - 1]:
+                    _monitor_end.append(datum[0])
+                    _monitor_start.append(datum[0])
+                    _monitor_text.append(datum[1])
+            else:
+                _monitor_text.append(datum[1])
+                _monitor_start.append(datum[0])
+
+        _monitor_end.append(monitor_data[len(monitor_data) - 1][0])
+
+        for i in range(len(_monitor_text)):
+            color = _color_dict[_monitor_text[i]]
+            ax1.hlines(_y_dict[_monitor_text[i]], _monitor_start[i], _monitor_end[i], colors=color, lw = 40)
 
         # ax1.ylim(0.95, 1.05)
         plt.legend()
 
         ax2.plot(time_data, speed, 'r')
 
+        print('done!')
 
         plt.show()
 
