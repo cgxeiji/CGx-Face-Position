@@ -98,6 +98,8 @@ def main():
         y = []
         z = []
         speed = []
+        distance = []
+        angle_data = []
         time_data = []
 
         zones = {}
@@ -112,6 +114,8 @@ def main():
             dist = np.linalg.norm(current_pos - prev_pos)
             sp = dist/(float(datum[0]) - prev_time) if (float(datum[0]) - prev_time) != 0 else 0
             speed.append(sp if sp < 400 else 0)
+            distance.append(np.linalg.norm(current_pos - np.array((0, 0, 0))))
+            angle_data.append(float(datum[4]))
             prev_pos = current_pos
             prev_time = float(datum[0])
         
@@ -227,7 +231,7 @@ def main():
         
                     
         plt.figure()
-        fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True)
         ax1.set_title(filepath)
         for i in range(len(_bar_text)):
             color = _color_dict[_bar_text[i]]
@@ -266,7 +270,10 @@ def main():
         # ax1.ylim(0.95, 1.05)
         plt.legend()
 
-        ax2.plot(time_data, speed, 'r')
+        ax2.plot(time_data, distance, 'g')
+        ax2.set_ylim(-10, 100)
+        ax3.plot(time_data, angle_data, 'r')
+        ax3.set_ylim(-90, 90)
 
         print('done!')
 
