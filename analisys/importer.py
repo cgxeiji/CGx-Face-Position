@@ -12,6 +12,23 @@ import operator
 import Tkinter as tk
 import tkFileDialog as filedialog
 
+class Smoother:
+    def __init__(self, size=3):
+        self.size = size
+        self.buffer = [0] * self.size
+
+    def input(self, value):
+        self.buffer.append(value)
+        self.buffer.pop(0)
+
+    def set(self, value):
+        self.buffer = []
+        for i in range(self.size):
+            self.buffer.append(value)
+
+    def value(self):
+        return sum(self.buffer) / len(self.buffer)
+
 def main():
     try:
         face_frames = []
@@ -20,6 +37,10 @@ def main():
 
         root = tk.Tk()
         root.withdraw()
+
+        smooth_distance = Smoother(20)
+        smooth_angle = Smoother(20)
+        smooth_speed = Smoother(20)
 
         filepath = ''
 
@@ -113,9 +134,12 @@ def main():
             current_pos = np.array((float(datum[1]), float(datum[2]), float(datum[3])))
             dist = np.linalg.norm(current_pos - prev_pos)
             sp = dist/(float(datum[0]) - prev_time) if (float(datum[0]) - prev_time) != 0 else 0
-            speed.append(sp if sp < 400 else 0)
-            distance.append(np.linalg.norm(current_pos - np.array((0, 0, 0))))
-            angle_data.append(float(datum[4]))
+            smooth_speed.input(sp if sp < 400 else 0)
+            speed.append(smooth_speed.value())
+            smooth_distance.input(np.linalg.norm(current_pos - np.array((0, 0, 0))))
+            distance.append(smooth_distance.value())
+            smooth_angle.input(float(datum[4]))
+            angle_data.append(smooth_angle.value())
             prev_pos = current_pos
             prev_time = float(datum[0])
         
@@ -270,10 +294,13 @@ def main():
         # ax1.ylim(0.95, 1.05)
         plt.legend()
 
-        ax2.plot(time_data, distance, 'g')
-        ax2.set_ylim(-10, 100)
-        ax3.plot(time_data, angle_data, 'r')
-        ax3.set_ylim(-90, 90)
+        plt.figure()
+
+        plt.plot(time_data, distance, 'g')
+        # plt.set_ylim(-10, 100)
+        plt.figure()
+        plt.plot(time_data, angle_data, 'r')
+        # plt.set_ylim(-90, 90)
 
         print('done!')
 
