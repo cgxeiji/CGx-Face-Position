@@ -2,7 +2,7 @@ from __future__ import print_function
 import traceback
 import csv
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,6 +12,7 @@ import operator
 import Tkinter as tk
 import tkFileDialog as filedialog
 import matplotlib.collections as collections
+import matplotlib.ticker as ticker
 
 
 class Smoother:
@@ -327,8 +328,15 @@ def main():
 
         _bar_end.append(face_data[len(face_data) - 1][0])
 
+        @ticker.FuncFormatter
+        def major_formatter(x, pos):
+            adder = timedelta(seconds=x)
+            which_time = start_time + adder
+            return "{}\n({})".format(which_time.strftime("%H:%M:%S"), int(x))
+
         fig, ax = plt.subplots()
         ax.set_title(filepath)
+        ax.xaxis.set_major_formatter(major_formatter)
         for i in range(len(_bar_text)):
             color = _color_dict[_bar_text[i]]
             # ax.hlines(1, _bar_start[i], _bar_end[i], colors=color, lw=40, label=_bar_text[i])
@@ -385,6 +393,7 @@ def main():
 
         fig, ax = plt.subplots()
         ax.set_title("Distance")
+        ax.xaxis.set_major_formatter(major_formatter)
 
         ax.plot(time_data, distance, 'black', linewidth=2)
         collection = collections.BrokenBarHCollection.span_where(
@@ -393,9 +402,12 @@ def main():
             facecolor="green", alpha=0.5, linewidths=0)
         ax.add_collection(collection)
         ax.set_ylim(-10, 40)
+        locs = ax.get_xticks(minor=True)
+        labels = ax.get_xticklabels(minor=True)
 
         fig, ax = plt.subplots()
         ax.set_title("Angle")
+        ax.xaxis.set_major_formatter(major_formatter)
         ax.plot(time_data, angle_data, 'black', linewidth=2)
         collection = collections.BrokenBarHCollection.span_where(
             np.array(time_data), ymin=-90, ymax=90,
@@ -406,6 +418,7 @@ def main():
 
         fig, ax = plt.subplots()
         ax.set_title("Speed")
+        ax.xaxis.set_major_formatter(major_formatter)
         ax.plot(time_data, speed, 'black', linewidth=2)
         collection = collections.BrokenBarHCollection.span_where(
             np.array(time_data), ymin=-10, ymax=40,
@@ -421,7 +434,6 @@ def main():
     finally:
         print('Finished')
 
-    # TODO: Plot horizontal bars for poses, speed line chart, and (x, y, z) line chart
     # TODO: Sync the slider with video frames and graphs
 
 
