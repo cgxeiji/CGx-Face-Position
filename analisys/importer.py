@@ -361,7 +361,9 @@ def main():
             return "{}\n({})".format(which_time.strftime("%H:%M:%S"), int(x))
 
         fig, ax = plt.subplots()
+        ax.set_yticks(np.arange(-10, 8, 1.0))
         ax.set_title(filepath)
+        ax.set_ylim(-11, 8)
         ax.xaxis.set_major_formatter(major_formatter)
         ax.yaxis.set_major_formatter(zone_formatter)
         for i in range(len(_bar_text)):
