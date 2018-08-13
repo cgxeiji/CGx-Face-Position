@@ -328,6 +328,32 @@ def main():
 
         _bar_end.append(face_data[len(face_data) - 1][0])
 
+        _y_dict_m = {
+            'Default Position': -3,
+            'Default Fast': -4,
+            'Move forward': -5,
+            'Move upward': -6,
+            'Move left': -7,
+            'Move right': -8,
+            'Turn clockwise': -9,
+            'Turn counter clockwise': -10}
+
+        @ticker.FuncFormatter
+        def zone_formatter(y, pos):
+            label = ""
+            index = int(y)
+            if index <= -3:
+                for key, value in _y_dict_m.iteritems():
+                    if index == value:
+                        label = key
+                        break
+            else:
+                for key, value in _y_dict.iteritems():
+                    if index == value:
+                        label = key
+                        break
+            return "{} ({})".format(label, index)
+
         @ticker.FuncFormatter
         def major_formatter(x, pos):
             adder = timedelta(seconds=x)
@@ -337,6 +363,7 @@ def main():
         fig, ax = plt.subplots()
         ax.set_title(filepath)
         ax.xaxis.set_major_formatter(major_formatter)
+        ax.yaxis.set_major_formatter(zone_formatter)
         for i in range(len(_bar_text)):
             color = _color_dict[_bar_text[i]]
             # ax.hlines(1, _bar_start[i], _bar_end[i], colors=color, lw=40, label=_bar_text[i])
@@ -357,15 +384,6 @@ def main():
             'Move right': 'saddlebrown',
             'Turn clockwise': 'orchid',
             'Turn counter clockwise': 'royalblue'}
-        _y_dict = {
-            'Default Position': -3,
-            'Default Fast': -4,
-            'Move forward': -5,
-            'Move upward': -6,
-            'Move left': -5,
-            'Move right': -10,
-            'Turn clockwise': -9,
-            'Turn counter clockwise': -10}
 
         _monitor_text = []
         _monitor_start = []
@@ -385,7 +403,7 @@ def main():
 
         for i in range(len(_monitor_text)):
             color = _color_dict[_monitor_text[i]]
-            ax.hlines(_y_dict[_monitor_text[i]], _monitor_start[i],
+            ax.hlines(_y_dict_m[_monitor_text[i]], _monitor_start[i],
                       _monitor_end[i], colors=color, lw=20)
 
         # ax1.ylim(0.95, 1.05)
