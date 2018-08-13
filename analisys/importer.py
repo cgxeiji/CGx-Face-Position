@@ -278,9 +278,12 @@ def main():
             order_flag = not order_flag
 
         print('... plotting')
+        _colors = []
+        for _d in recipe:
+            _colors.append(_color_dict[_d.split('\n')[0]])
 
         wedges, texts = zones_ax.pie(
-            _data, wedgeprops=dict(width=0.5), startangle=-89)
+            _data, colors=_colors, wedgeprops=dict(width=0.5), startangle=-89)
 
         bbox_props = dict(
             boxstyle="square,pad=0.3",
@@ -407,6 +410,9 @@ def main():
             color = _color_dict[_monitor_text[i]]
             ax.hlines(_y_dict_m[_monitor_text[i]], _monitor_start[i],
                       _monitor_end[i], colors=color, lw=20)
+
+        fig.savefig("{}.pdf".format(
+            filepath.split('/')[-1]), bbox_inches='tight')
 
         # ax1.ylim(0.95, 1.05)
         # plt.legend()
