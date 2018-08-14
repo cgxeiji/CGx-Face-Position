@@ -421,37 +421,19 @@ def main():
         ax.set_title("Distance")
         ax.xaxis.set_major_formatter(major_formatter)
 
-        ax.plot(time_data, distance, 'black', linewidth=2)
+        ax.plot(time_data, distance, 'blue', linewidth=1)
         collection = collections.BrokenBarHCollection.span_where(
             np.array(time_data), ymin=-10, ymax=40,
             where=np.array(face_in_safe) > 0,
             facecolor="green", alpha=0.5, linewidths=0)
         ax.add_collection(collection)
-        ax.set_ylim(-10, 40)
         locs = ax.get_xticks(minor=True)
         labels = ax.get_xticklabels(minor=True)
 
-        fig, ax = plt.subplots()
-        ax.set_title("Angle")
-        ax.xaxis.set_major_formatter(major_formatter)
-        ax.plot(time_data, angle_data, 'black', linewidth=2)
-        collection = collections.BrokenBarHCollection.span_where(
-            np.array(time_data), ymin=-90, ymax=90,
-            where=np.array(face_in_safe) > 0,
-            facecolor="green", alpha=0.5, linewidths=0)
-        ax.add_collection(collection)
-        ax.set_ylim(-90, 90)
+        ax.plot(time_data, angle_data, 'red', linewidth=1)
 
-        fig, ax = plt.subplots()
-        ax.set_title("Speed")
-        ax.xaxis.set_major_formatter(major_formatter)
-        ax.plot(time_data, speed, 'black', linewidth=2)
-        collection = collections.BrokenBarHCollection.span_where(
-            np.array(time_data), ymin=-10, ymax=40,
-            where=np.array(face_in_safe) > 0,
-            facecolor="green", alpha=0.5, linewidths=0)
-        ax.add_collection(collection)
-        ax.set_ylim(-10, 40)
+        ax.plot(time_data, speed, 'navy', linewidth=1)
+        ax.set_ylim(0, 10)
 
         print('done!')
 
