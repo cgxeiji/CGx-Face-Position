@@ -334,10 +334,10 @@ def main():
         _y_dict_m = {
             'Default Position': -3,
             'Default Fast': -4,
-            'Move forward': -5,
-            'Move upward': -6,
-            'Move left': -7,
-            'Move right': -8,
+            'Move forward': -8,
+            'Move upward': -7,
+            'Move left': -5,
+            'Move right': -6,
             'Turn clockwise': -9,
             'Turn counter clockwise': -10}
 
@@ -382,11 +382,11 @@ def main():
 
         _color_dict = {
             'Default Position': 'green',
-            'Default Fast': 'lightgrey',
-            'Move forward': 'purple',
-            'Move upward': 'navy',
-            'Move left': 'salmon',
-            'Move right': 'saddlebrown',
+            'Default Fast': 'red',
+            'Move forward': 'saddlebrown',
+            'Move upward': 'salmon',
+            'Move left': 'purple',
+            'Move right': 'navy',
             'Turn clockwise': 'orchid',
             'Turn counter clockwise': 'royalblue'}
 
