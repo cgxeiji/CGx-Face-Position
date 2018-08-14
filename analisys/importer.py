@@ -423,7 +423,7 @@ def main():
 
         ax.plot(time_data, distance, 'black', linewidth=2)
         collection = collections.BrokenBarHCollection.span_where(
-            np.array(time_data), ymin=-10, ymax=40,
+            np.array(time_data), ymin=-0, ymax=3,
             where=np.array(face_in_safe) > 0,
             facecolor="green", alpha=0.5, linewidths=0)
         ax.add_collection(collection)
@@ -436,7 +436,7 @@ def main():
         ax.xaxis.set_major_formatter(major_formatter)
         ax.plot(time_data, angle_data, 'black', linewidth=2)
         collection = collections.BrokenBarHCollection.span_where(
-            np.array(time_data), ymin=-90, ymax=90,
+            np.array(time_data), ymin=-10, ymax=10,
             where=np.array(face_in_safe) > 0,
             facecolor="green", alpha=0.5, linewidths=0)
         ax.add_collection(collection)
@@ -447,7 +447,7 @@ def main():
         ax.xaxis.set_major_formatter(major_formatter)
         ax.plot(time_data, speed, 'black', linewidth=2)
         collection = collections.BrokenBarHCollection.span_where(
-            np.array(time_data), ymin=-10, ymax=40,
+            np.array(time_data), ymin=-0, ymax=3,
             where=np.array(face_in_safe) > 0,
             facecolor="green", alpha=0.5, linewidths=0)
         ax.add_collection(collection)
