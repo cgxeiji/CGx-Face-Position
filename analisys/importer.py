@@ -42,9 +42,9 @@ def main():
         root = tk.Tk()
         root.withdraw()
 
-        smooth_distance = Smoother(50)
-        smooth_angle = Smoother(50)
-        smooth_speed = Smoother(50)
+        smooth_distance = Smoother(20)
+        smooth_angle = Smoother(20)
+        smooth_speed = Smoother(20)
 
         filepath = ''
 
@@ -226,7 +226,7 @@ def main():
 
         print('... computing times')
 
-        _color_dict = {
+        _color_dict_face = {
             'Pose Safe': 'green',
             '': 'white',
                 'CGx Bug': 'white',
@@ -280,7 +280,7 @@ def main():
         print('... plotting')
         _colors = []
         for _d in recipe:
-            _colors.append(_color_dict[_d.split('\n')[0]])
+            _colors.append(_color_dict_face[_d.split('\n')[0]])
 
         wedges, texts = zones_ax.pie(
             _data, colors=_colors, wedgeprops=dict(width=0.5), startangle=-89)
@@ -370,7 +370,7 @@ def main():
         ax.xaxis.set_major_formatter(major_formatter)
         ax.yaxis.set_major_formatter(zone_formatter)
         for i in range(len(_bar_text)):
-            color = _color_dict[_bar_text[i]]
+            color = _color_dict_face[_bar_text[i]]
             # ax.hlines(1, _bar_start[i], _bar_end[i], colors=color, lw=40, label=_bar_text[i])
             ax.hlines(_y_dict[_bar_text[i]], _bar_start[i],
                       _bar_end[i], colors=color, lw=20)
@@ -411,29 +411,52 @@ def main():
             ax.hlines(_y_dict_m[_monitor_text[i]], _monitor_start[i],
                       _monitor_end[i], colors=color, lw=20)
 
-        fig.savefig("{}.pdf".format(
-            filepath.split('/')[-1]), bbox_inches='tight')
+        # fig.savefig("{}.pdf".format(
+        #     filepath.split('/')[-1]), bbox_inches='tight')
 
         # ax1.ylim(0.95, 1.05)
         # plt.legend()
 
         fig, ax = plt.subplots()
-        ax.set_title("Distance")
+
+        # ax3 = ax.twinx()
+        # ax3.set_ylim(-10, 10)
+
+        for i in range(len(_bar_text)):
+            color = _color_dict_face[_bar_text[i]]
+            ax.axvspan(_bar_start[i], _bar_end[i],
+                       ymin=0.5, ymax=1,
+                       color=color, alpha=0.5, linewidth=0)
+
+        for i in range(len(_monitor_text)):
+            color = _color_dict[_monitor_text[i]]
+            ax.axvspan(_monitor_start[i], _monitor_end[i],
+                       ymin=0, ymax=0.5,
+                       color=color, alpha=0.5, linewidth=0)
+
+        ax.set_title("Visual Data")
         ax.xaxis.set_major_formatter(major_formatter)
+        ax.set_xlabel("time")
+        ax.set_ylabel("Distance (cm) / Speed (cm/s)")
 
         ax.plot(time_data, distance, 'blue', linewidth=1)
-        collection = collections.BrokenBarHCollection.span_where(
-            np.array(time_data), ymin=-10, ymax=40,
-            where=np.array(face_in_safe) > 0,
-            facecolor="green", alpha=0.5, linewidths=0)
-        ax.add_collection(collection)
+        # collection = collections.BrokenBarHCollection.span_where(
+        #     np.array(time_data), ymin=-10, ymax=40,
+        #     where=np.array(face_in_safe) > 0,
+        #     facecolor="green", alpha=0.5, linewidths=0)
+        # ax.add_collection(collection)
         locs = ax.get_xticks(minor=True)
         labels = ax.get_xticklabels(minor=True)
 
-        ax.plot(time_data, angle_data, 'red', linewidth=1)
-
-        ax.plot(time_data, speed, 'navy', linewidth=1)
+        ax.plot(time_data, speed, 'green', linewidth=1)
         ax.set_ylim(0, 10)
+
+        ax2 = ax.twinx()
+        ax2.set_ylabel("Angle (degrees)", color='red')
+        ax2.tick_params(axis='y', labelcolor='red')
+
+        ax2.plot(time_data, angle_data, 'red', linewidth=1)
+        ax2.set_ylim(-20, 20)
 
         print('done!')
 
