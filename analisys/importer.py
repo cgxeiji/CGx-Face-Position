@@ -35,6 +35,10 @@ class Smoother:
 
 def main():
     try:
+        all_enabled = False
+        if len(sys.argv) > 1:
+            if sys.argv[1] == 1:
+                all_enabled = True
         face_frames = []
         monitor_frames = []
         monitor_motion = []
@@ -251,65 +255,69 @@ def main():
 
         #_color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'white', 'Leaning right':'saddlebrown', 'Leaning left':'saddlebrown', 'Lean backward':'saddlebrown', 'Lean forward':'saddlebrown', 'Head tilt left':'saddlebrown', 'Head tilt right':'saddlebrown'}
 
-        zones_fig, zones_ax = plt.subplots(
-            figsize=(6, 3), subplot_kw=dict(aspect="equal"))
+        if all_enabled:
+            zones_fig, zones_ax = plt.subplots(
+                figsize=(6, 3), subplot_kw=dict(aspect="equal"))
 
-        zones_clean = {}
-        for key, value in zones.iteritems():
-            if key not in ["Face Lost", '', "CGx Bug"]:
-                zones_clean["{}\n{:.0f}:{:02.0f}".format(
-                    key, value/60, value % 60)] = value
+            zones_clean = {}
+            for key, value in zones.iteritems():
+                if key not in ["Face Lost", '', "CGx Bug"]:
+                    zones_clean["{}\n{:.0f}:{:02.0f}".format(
+                        key, value/60, value % 60)] = value
 
-        zones_show = {}
-        recipe = []
-        _data = []
-        order_flag = False
-        while len(zones_clean) > 0:
-            key = ''
-            if order_flag:
-                key = max(zones_clean.iteritems(),
-                          key=operator.itemgetter(1))[0]
-            else:
-                key = min(zones_clean.iteritems(),
-                          key=operator.itemgetter(1))[0]
-            value = zones_clean.pop(key)
-            recipe.append(key)
-            _data.append(value)
-            order_flag = not order_flag
+            zones_show = {}
+            recipe = []
+            _data = []
+            order_flag = False
+            while len(zones_clean) > 0:
+                key = ''
+                if order_flag:
+                    key = max(zones_clean.iteritems(),
+                              key=operator.itemgetter(1))[0]
+                else:
+                    key = min(zones_clean.iteritems(),
+                              key=operator.itemgetter(1))[0]
+                value = zones_clean.pop(key)
+                recipe.append(key)
+                _data.append(value)
+                order_flag = not order_flag
 
         print('... plotting')
-        _colors = []
-        for _d in recipe:
-            _colors.append(_color_dict_face[_d.split('\n')[0]])
 
-        wedges, texts = zones_ax.pie(
-            _data, colors=_colors, wedgeprops=dict(width=0.5), startangle=-89)
+        if all_enabled:
+            _colors = []
+            for _d in recipe:
+                _colors.append(_color_dict_face[_d.split('\n')[0]])
 
-        bbox_props = dict(
-            boxstyle="square,pad=0.3",
-            fc="w",
-            ec="k",
-            lw=0.72)
-        kw = dict(
-            xycoords='data',
-            textcoords='data',
-            arrowprops=dict(arrowstyle="-"),
-            bbox=bbox_props,
-            zorder=0,
-            va="center")
+            wedges, texts = zones_ax.pie(
+                _data, colors=_colors, wedgeprops=dict(width=0.5), startangle=-89)
 
-        for i, p in enumerate(wedges):
-            ang = (p.theta2 - p.theta1)/2. + p.theta1
-            _y = np.sin(np.deg2rad(ang))
-            _x = np.cos(np.deg2rad(ang))
-            horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(_x))]
-            connectionstyle = "angle,angleA=0,angleB={}".format(ang)
-            kw["arrowprops"].update({"connectionstyle": connectionstyle})
-            zones_ax.annotate(recipe[i], xy=(_x, _y), xytext=(
-                1.35*np.sign(_x), 1.4*_y), horizontalalignment=horizontalalignment, **kw)
+            bbox_props = dict(
+                boxstyle="square,pad=0.3",
+                fc="w",
+                ec="k",
+                lw=0.72)
+            kw = dict(
+                xycoords='data',
+                textcoords='data',
+                arrowprops=dict(arrowstyle="-"),
+                bbox=bbox_props,
+                zorder=0,
+                va="center")
 
-        zones_ax.set_title("Pose Distribution")
-        #zones_ax.legend(wedges, recipe)
+            for i, p in enumerate(wedges):
+                ang = (p.theta2 - p.theta1)/2. + p.theta1
+                _y = np.sin(np.deg2rad(ang))
+                _x = np.cos(np.deg2rad(ang))
+                horizontalalignment = {-1: "right",
+                                       1: "left"}[int(np.sign(_x))]
+                connectionstyle = "angle,angleA=0,angleB={}".format(ang)
+                kw["arrowprops"].update({"connectionstyle": connectionstyle})
+                zones_ax.annotate(recipe[i], xy=(_x, _y), xytext=(
+                    1.35*np.sign(_x), 1.4*_y), horizontalalignment=horizontalalignment, **kw)
+
+            zones_ax.set_title("Pose Distribution")
+            #zones_ax.legend(wedges, recipe)
 
         face_in_safe = []
         _bar_text = []
@@ -363,22 +371,17 @@ def main():
             which_time = start_time + adder
             return "{}\n({})".format(which_time.strftime("%H:%M:%S"), int(x))
 
-        fig, ax = plt.subplots()
-        ax.set_yticks(np.arange(-10, 8, 1.0))
-        ax.set_title(filepath)
-        ax.set_ylim(-11, 8)
-        ax.xaxis.set_major_formatter(major_formatter)
-        ax.yaxis.set_major_formatter(zone_formatter)
-        for i in range(len(_bar_text)):
-            color = _color_dict_face[_bar_text[i]]
-            # ax.hlines(1, _bar_start[i], _bar_end[i], colors=color, lw=40, label=_bar_text[i])
-            ax.hlines(_y_dict[_bar_text[i]], _bar_start[i],
-                      _bar_end[i], colors=color, lw=20)
-            # plt.text((_bar_start[i] + _bar_end[i]) / 2, 1.01, _bar_text[i], ha='center')
-
-        # labels = ['Monitor', 'Pose Safe', 'Leaning right', 'Leaning left', 'Lean backward', 'Lean forward', 'Head tilt left', 'Head tilt right']
-
-        # ax1.set_yticklabels(labels)
+        if all_enabled:
+            fig, ax = plt.subplots()
+            ax.set_yticks(np.arange(-10, 8, 1.0))
+            ax.set_title(filepath)
+            ax.set_ylim(-11, 8)
+            ax.xaxis.set_major_formatter(major_formatter)
+            ax.yaxis.set_major_formatter(zone_formatter)
+            for i in range(len(_bar_text)):
+                color = _color_dict_face[_bar_text[i]]
+                ax.hlines(_y_dict[_bar_text[i]], _bar_start[i],
+                          _bar_end[i], colors=color, lw=20)
 
         _color_dict = {
             'Default Position': 'green',
@@ -406,21 +409,16 @@ def main():
 
         _monitor_end.append(monitor_data[len(monitor_data) - 1][0])
 
-        for i in range(len(_monitor_text)):
-            color = _color_dict[_monitor_text[i]]
-            ax.hlines(_y_dict_m[_monitor_text[i]], _monitor_start[i],
-                      _monitor_end[i], colors=color, lw=20)
+        if all_enabled:
+            for i in range(len(_monitor_text)):
+                color = _color_dict[_monitor_text[i]]
+                ax.hlines(_y_dict_m[_monitor_text[i]], _monitor_start[i],
+                          _monitor_end[i], colors=color, lw=20)
 
         # fig.savefig("{}.pdf".format(
         #     filepath.split('/')[-1]), bbox_inches='tight')
 
-        # ax1.ylim(0.95, 1.05)
-        # plt.legend()
-
         fig, ax = plt.subplots()
-
-        # ax3 = ax.twinx()
-        # ax3.set_ylim(-10, 10)
 
         for i in range(len(_bar_text)):
             color = _color_dict_face[_bar_text[i]]
@@ -461,6 +459,7 @@ def main():
         print('done!')
 
         plt.show()
+        print("test")
 
     finally:
         print('Finished')
