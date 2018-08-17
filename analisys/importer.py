@@ -424,13 +424,13 @@ def main():
         for i in range(len(_bar_text)):
             color = _color_dict_face[_bar_text[i]]
             ax.axvspan(_bar_start[i], _bar_end[i],
-                       ymin=0.5, ymax=1,
+                       ymin=0.2, ymax=1,
                        color=color, alpha=0.5, linewidth=0)
 
         for i in range(len(_monitor_text)):
             color = _color_dict[_monitor_text[i]]
             ax.axvspan(_monitor_start[i], _monitor_end[i],
-                       ymin=0, ymax=0.5,
+                       ymin=0, ymax=0.2,
                        color=color, alpha=0.5, linewidth=0)
 
         ax.set_title("Visual Data")
@@ -448,7 +448,7 @@ def main():
         labels = ax.get_xticklabels(minor=True)
 
         ax.plot(time_data, speed, 'green', linewidth=1)
-        ax.set_ylim(0, 10)
+        ax.set_ylim(-5, 5)
 
         ax2 = ax.twinx()
         ax2.set_ylabel("Angle (degrees)", color='red')
