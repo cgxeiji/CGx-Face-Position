@@ -231,16 +231,16 @@ def main():
         print('... computing times')
 
         _color_dict_face = {
-            'Pose Safe': 'green',
+            'Pose Safe': '#aaf9c6',
             '': 'white',
                 'CGx Bug': 'white',
                 'Face Lost': 'lightgrey',
-                'Leaning right': 'purple',
-                'Leaning left': 'navy',
-                'Lean backward': 'salmon',
-                'Lean forward': 'saddlebrown',
-                'Head tilt left': 'orchid',
-                'Head tilt right': 'royalblue'}
+                'Leaning right': '#79c9c3',
+                'Leaning left': '#3c5099',
+                'Lean backward': '#ff88ae',
+                'Lean forward': '#cc6cbb',
+                'Head tilt left': '#3c5099',
+                'Head tilt right': '#4169e1'}
         _y_dict = {
             'Pose Safe': 0,
             '': 0,
@@ -384,14 +384,14 @@ def main():
                           _bar_end[i], colors=color, lw=20)
 
         _color_dict = {
-            'Default Position': 'green',
+            'Default Position': '#aaf9c6',
             'Default Fast': 'red',
-            'Move forward': 'saddlebrown',
-            'Move upward': 'salmon',
-            'Move left': 'purple',
-            'Move right': 'navy',
-            'Turn clockwise': 'orchid',
-            'Turn counter clockwise': 'royalblue'}
+            'Move forward': '#cc6cbb',
+            'Move upward': '#ff88ae',
+            'Move left': '#79c9c3',
+            'Move right': '#3c5099',
+            'Turn clockwise': '#3c5099',
+            'Turn counter clockwise': '#4169e1'}
 
         _monitor_text = []
         _monitor_start = []
