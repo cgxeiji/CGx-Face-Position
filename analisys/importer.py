@@ -36,9 +36,6 @@ class Smoother:
 def main():
     try:
         all_enabled = False
-        if len(sys.argv) > 1:
-            if sys.argv[1] == 1:
-                all_enabled = True
         face_frames = []
         monitor_frames = []
         monitor_motion = []
@@ -56,6 +53,8 @@ def main():
 
         if len(sys.argv) < 2:
             filepath = filedialog.askopenfilename()
+        elif sys.argv[1] == 1:
+            all_enabled = True
         else:
             filepath = sys.argv[1]
 
@@ -122,6 +121,8 @@ def main():
             datum = []
             datum.append(timestamp)
             datum.extend(frame[0:6])
+            if "Pose Safe" in datum[5]:
+                datum[5] = "Pose Safe"
             face_data.append(datum)
 
         monitor_data = []
@@ -459,7 +460,6 @@ def main():
         print('done!')
 
         plt.show()
-        print("test")
 
     finally:
         print('Finished')
