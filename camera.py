@@ -125,6 +125,8 @@ def main():
                 print("{}, {} at {}".format(
                     visual.get_center(), visual.get_angle(), location))
             elif c == ord('z'):
+                print("Manual override to Default Location")
+                logging.info("Manual override to Default Location")
                 robot.move((0, 0, 0), (0, 0, 0))
             elif c == ord('t'):
                 tracking = not tracking
