@@ -13,6 +13,8 @@ import Tkinter as tk
 import tkFileDialog as filedialog
 import matplotlib.collections as collections
 import matplotlib.ticker as ticker
+import ConfigParser
+import pprint
 
 
 class Smoother:
@@ -33,6 +35,61 @@ class Smoother:
         return sum(self.buffer) / len(self.buffer)
 
 
+class Action:
+    def __init__(self, (x, y, z), (a, b, c), tspeed, aspeed):
+        self.position = (x, y, z)
+        self.rotation = (a, b, c)
+        self.tspeed = tspeed
+        self.aspeed = aspeed
+
+
+class Monitor:
+    def __init__(self):
+        self.actions = {}
+        self.load_actions()
+
+    def load_actions(self):
+        print("Loading actions")
+        config = ConfigParser.ConfigParser()
+        config.read('config/monitor.ini')
+        for section in config.sections():
+            pos = (config.getfloat(section, 'x'), config.getfloat(
+                section, 'y'), config.getfloat(section, 'z'))
+            rot = (config.getfloat(section, 'a'), config.getfloat(
+                section, 'b'), config.getfloat(section, 'c'))
+            tspeed = config.getfloat(section, 'tspeed')
+            aspeed = config.getfloat(section, 'aspeed')
+
+            action = Action(pos, rot, tspeed, aspeed)
+
+            self.actions[section] = action
+
+    def p(self, start, end, length):
+        if start == end:
+            return end
+        proportion = float(length)/abs(start - end)
+        if proportion > 1.0:
+            proportion = 1.0
+        if proportion < 0.0:
+            proportion = 0.0
+        return (float(end) - float(start)) * float(proportion) + float(start)
+
+    def calculate(self, (x_s, y_s, z_s), (a_s, b_s, c_s),
+                  (x_f, y_f, z_f), (a_f, b_f, c_f),
+                  tspeed, aspeed, time):
+        distance = tspeed * time
+        x = self.p(x_s, x_f, distance)
+        y = self.p(y_s, y_f, distance)
+        z = self.p(z_s, z_f, distance)
+
+        angle = aspeed * time
+        a = self.p(a_s, a_f, angle)
+        b = self.p(b_s, b_f, angle)
+        c = self.p(c_s, c_f, angle)
+
+        return (x, y, z), (a, b, c)
+
+
 def main():
     try:
         all_enabled = False
@@ -46,6 +103,17 @@ def main():
         smooth_distance = Smoother(20)
         smooth_angle = Smoother(20)
         smooth_speed = Smoother(20)
+        smooth_x = Smoother(20)
+        smooth_y = Smoother(20)
+        smooth_z = Smoother(20)
+
+        monitor = Monitor()
+        pprint.pprint(monitor.actions)
+
+        print(monitor.calculate(
+            (0, 0, 0), (0, 0, 0),
+            (10, 10, 10), (10, 10, 10),
+            2, 3, 3))
 
         filepath = ''
 
@@ -146,6 +214,7 @@ def main():
             datum = []
             datum.append(timestamp)
             datum.append(frame[0])
+            datum.append(monitor.actions[frame[0]])
             monitor_data.append(datum)
 
         print('... monitor motion')
@@ -157,6 +226,10 @@ def main():
         distance = []
         angle_data = []
         time_data = []
+
+        face_x = []
+        face_y = []
+        face_z = []
 
         zones = {}
         prev_pos = np.array((0, 0, 0))
@@ -172,6 +245,14 @@ def main():
             sp = dist / (float(datum[0]) - prev_time) \
                 if (float(datum[0]) - prev_time) != 0 \
                 else 0
+
+            smooth_x.input(float(datum[1]))
+            smooth_y.input(float(datum[2]))
+            smooth_z.input(float(datum[3]))
+
+            face_x.append(smooth_x.value())
+            face_y.append(smooth_y.value())
+            face_z.append(smooth_z.value())
 
             smooth_speed.input(sp if sp < 400 else 0)
             speed.append(smooth_speed.value())
@@ -398,16 +479,58 @@ def main():
         _monitor_text = []
         _monitor_start = []
         _monitor_end = []
+        _monitor_time_data = []
+        _monitor_x = []
+        _monitor_y = []
+        _monitor_z = []
+        _monitor_a = []
+        _monitor_b = []
+        _monitor_c = []
+        prev_t = None
+        prev_a = None
+        prev_action = None
+        prev_time = 0.0
 
         for datum in monitor_data:
             if len(_monitor_text) > 0:
                 if datum[1] not in _monitor_text[len(_monitor_text) - 1]:
                     _monitor_end.append(datum[0])
+                    action = datum[2]
+                    _p, _a = monitor.calculate(
+                        pprev_t, pprev_a,
+                        prev_t, prev_a,
+                        prev_action.tspeed, prev_action.aspeed,
+                        datum[0] - prev_time)
+
                     _monitor_start.append(datum[0])
                     _monitor_text.append(datum[1])
+
+                    _monitor_time_data.append(datum[0])
+                    _monitor_x.append(_p[0]/10.0)
+                    _monitor_y.append(_p[1]/10.0)
+                    _monitor_z.append(_p[2]/10.0)
+
+                    _monitor_a.append(_a[0])
+                    _monitor_b.append(_a[1])
+                    _monitor_c.append(_a[2])
+
+                    pprev_a = _a
+                    pprev_t = _p
+                    prev_t = action.position
+                    prev_a = action.rotation
+                    prev_action = action
+                    prev_time = datum[0]
+
             else:
                 _monitor_text.append(datum[1])
                 _monitor_start.append(datum[0])
+                action = datum[2]
+                prev_t = action.position
+                prev_a = action.rotation
+                pprev_a = prev_a
+                pprev_t = prev_t
+                prev_action = action
+                prev_time = datum[0]
 
         _monitor_end.append(monitor_data[len(monitor_data) - 1][0])
 
@@ -440,6 +563,13 @@ def main():
         ax.set_ylabel("Distance (cm) / Speed (cm/s)")
 
         ax.plot(time_data, distance, 'blue', linewidth=1)
+        ax.plot(_monitor_time_data, _monitor_x, '#1A1A1A', linewidth=1)
+        ax.plot(_monitor_time_data, _monitor_y, '#303030', linewidth=1)
+        ax.plot(_monitor_time_data, _monitor_z, '#4D4D4D', linewidth=1)
+
+        # ax.plot(time_data, face_x, '#9A32CD', linewidth=1)
+        # ax.plot(time_data, face_y, '#66CDAA', linewidth=1)
+        # ax.plot(time_data, face_z, '#CD5B45', linewidth=1)
         # collection = collections.BrokenBarHCollection.span_where(
         #     np.array(time_data), ymin=-10, ymax=40,
         #     where=np.array(face_in_safe) > 0,
@@ -456,6 +586,10 @@ def main():
         ax2.tick_params(axis='y', labelcolor='red')
 
         ax2.plot(time_data, angle_data, 'red', linewidth=1)
+        ax2.plot(_monitor_time_data, _monitor_a, '#FF4500', linewidth=1)
+        ax2.plot(_monitor_time_data, _monitor_b, '#8B2500', linewidth=1)
+        ax2.plot(_monitor_time_data, _monitor_c, '#CD0000', linewidth=1)
+
         ax2.set_ylim(-20, 20)
 
         print('done!')
