@@ -53,8 +53,9 @@ def main():
 
         if len(sys.argv) < 2:
             filepath = filedialog.askopenfilename()
-        elif sys.argv[1] == 1:
+        elif sys.argv[1] == "1":
             all_enabled = True
+            filepath = filedialog.askopenfilename()
         else:
             filepath = sys.argv[1]
 
