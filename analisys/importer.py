@@ -127,6 +127,9 @@ def main():
         else:
             filepath = sys.argv[1]
 
+        root.update()
+        root.destroy()
+
         print('loading file: {}'.format(filepath))
 
         with open(filepath) as file:
