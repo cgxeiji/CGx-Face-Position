@@ -563,9 +563,6 @@ def main():
         ax.set_ylabel("Distance (cm) / Speed (cm/s)")
 
         ax.plot(time_data, distance, 'blue', linewidth=1)
-        ax.plot(_monitor_time_data, _monitor_x, '#1A1A1A', linewidth=1)
-        ax.plot(_monitor_time_data, _monitor_y, '#303030', linewidth=1)
-        ax.plot(_monitor_time_data, _monitor_z, '#4D4D4D', linewidth=1)
 
         # ax.plot(time_data, face_x, '#9A32CD', linewidth=1)
         # ax.plot(time_data, face_y, '#66CDAA', linewidth=1)
@@ -586,11 +583,53 @@ def main():
         ax2.tick_params(axis='y', labelcolor='red')
 
         ax2.plot(time_data, angle_data, 'red', linewidth=1)
-        ax2.plot(_monitor_time_data, _monitor_a, '#FF4500', linewidth=1)
-        ax2.plot(_monitor_time_data, _monitor_b, '#8B2500', linewidth=1)
-        ax2.plot(_monitor_time_data, _monitor_c, '#CD0000', linewidth=1)
 
         ax2.set_ylim(-20, 20)
+
+        fig, ax = plt.subplots(3, 1, sharex=True)
+        for a in ax:
+            for i in range(len(_bar_text)):
+                color = _color_dict_face[_bar_text[i]]
+                a.axvspan(_bar_start[i], _bar_end[i],
+                          ymin=0.5, ymax=1,
+                          color=color, alpha=0.5, linewidth=0)
+
+            for i in range(len(_monitor_text)):
+                color = _color_dict[_monitor_text[i]]
+                a.axvspan(_monitor_start[i], _monitor_end[i],
+                          ymin=0, ymax=0.5,
+                          color=color, alpha=0.5, linewidth=0)
+
+            ax[0].xaxis.set_major_formatter(major_formatter)
+            ax[0].set_ylabel("Monitor Coordinates (cm)")
+
+            ax[0].plot(_monitor_time_data, _monitor_x, 'purple', linewidth=1)
+            ax[0].plot(_monitor_time_data, _monitor_y, 'green', linewidth=1)
+            ax[0].plot(_monitor_time_data, _monitor_z, 'blue', linewidth=1)
+
+            ax[1].xaxis.set_major_formatter(major_formatter)
+            ax[1].set_ylabel("Monitor Angle (degrees)")
+
+            ax[1].plot(_monitor_time_data, _monitor_a, 'purple', linewidth=1)
+            ax[1].plot(_monitor_time_data, _monitor_b, 'green', linewidth=1)
+            ax[1].plot(_monitor_time_data, _monitor_c, 'blue', linewidth=1)
+
+            ax[2].xaxis.set_major_formatter(major_formatter)
+            ax[2].set_xlabel("time")
+            ax[2].set_ylabel("Face Coordinates (cm)")
+
+            ax[2].plot(time_data, face_x, 'purple', linewidth=1)
+            ax[2].plot(time_data, face_y, 'green', linewidth=1)
+            ax[2].plot(time_data, face_z, 'blue', linewidth=1)
+            ax[2].set_ylim(-5, 5)
+
+            ax2 = ax[2].twinx()
+            ax2.set_ylabel("Angle (degrees)", color='red')
+            ax2.tick_params(axis='y', labelcolor='red')
+
+            ax2.plot(time_data, angle_data, 'red', linewidth=1)
+
+            ax2.set_ylim(-20, 20)
 
         print('done!')
 
