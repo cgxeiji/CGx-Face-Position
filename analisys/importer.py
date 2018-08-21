@@ -507,6 +507,17 @@ def main():
                 color = colors.pose[_bar_text[i]]
                 ax.hlines(_y_dict[_bar_text[i]], _bar_start[i],
                           _bar_end[i], colors=color, lw=20)
+        if args.video_data:
+            fig, ax = plt.subplots()
+            ax.set_yticks(np.arange(-1, 1, 1.0))
+            ax.set_title(videopath)
+            ax.set_ylim(-1, 1)
+            ax.xaxis.set_major_formatter(major_formatter)
+            ax.yaxis.set_major_formatter(zone_formatter)
+            for i in range(len(video_data["Text"])):
+                color = colors.video.get(video_data["Text"][i], 'black')
+                ax.hlines(0, video_data["Start"][i],
+                          video_data["End"][i], colors=color, lw=20)
 
         _monitor_text = []
         _monitor_start = []
