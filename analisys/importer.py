@@ -58,6 +58,32 @@ class Action:
         self.aspeed = aspeed
 
 
+class Color:
+    def __init__(self):
+        self.pose = {}
+        self.monitor = {}
+        self.video = {}
+        self.load_colors()
+        pprint.pprint(self.pose)
+
+    def load_colors(self):
+        print("Loading colors")
+        config = ConfigParser.ConfigParser()
+        config.optionxform = str
+        config.read('./colors.ini')
+        for section in config.sections():
+            items = {}
+            for (name, value) in config.items(section):
+                items[name] = value
+            if section == "Pose":
+                items[''] = 'white'
+                self.pose = items
+            elif section == "Monitor":
+                self.monitor = items
+            elif section == "Video":
+                self.video = items
+
+
 class Monitor:
     def __init__(self):
         self.actions = {}
@@ -141,6 +167,25 @@ def process_logfile(file):
     return face_frames, monitor_frames, monitor_motion
 
 
+def process_videofile(file):
+    data = {}
+    data["Text"] = []
+    data["Start"] = []
+    data["End"] = []
+
+    def time2seconds(s):
+        start = datetime.strptime("0:0:0:0", "%H:%M:%S:%f")
+        return (datetime.strptime(s, "%H:%M:%S:%f") - start).total_seconds()
+
+    csv_data = csv.DictReader(file)
+    for row in csv_data:
+        data["Text"].append(row["Name"])
+        data["Start"].append(time2seconds(row["Start"]))
+        data["End"].append(time2seconds(row["End"]))
+
+    return data
+
+
 def main():
     try:
         args = parser.parse_args()
@@ -156,23 +201,22 @@ def main():
         smooth_z = Smoother(20)
 
         monitor = Monitor()
-        pprint.pprint(monitor.actions)
-
-        print(monitor.calculate(
-            (0, 0, 0), (0, 0, 0),
-            (10, 10, 10), (10, 10, 10),
-            2, 3, 3))
+        colors = Color()
 
         filepath = ''
         videopath = ''
 
         if args.filepath is None:
             print('Select a log file to analyze:')
-            filepath = filedialog.askopenfilename()
+            filepath = filedialog.askopenfilename(
+                title='Select a log file to analyze:',
+                filetypes=[('Log files', '*.log')])
             print('File: {} selected'.format(filepath))
         if args.video_data:
             print('Select a video annotation file to append:')
-            videopath = filedialog.askopenfilename()
+            videopath = filedialog.askopenfilename(
+                title='Select a video annotation file to append:',
+                filetypes=[('CSV files', '.csv')])
             print('File: {} selected'.format(videopath))
 
         root.update()
@@ -183,6 +227,14 @@ def main():
         face_frames = []
         monitor_frames = []
         monitor_motion = []
+        video_data = {}
+
+        if args.video_data:
+            with open(videopath) as file:
+                video_data = process_videofile(file)
+
+            pprint.pprint(video_data)
+            return
 
         with open(filepath) as file:
             face_frames, monitor_frames, monitor_motion = process_logfile(file)
@@ -398,7 +450,7 @@ def main():
         if args.all:
             _colors = []
             for _d in recipe:
-                _colors.append(_color_dict_face[_d.split('\n')[0]])
+                _colors.append(colors.pose[_d.split('\n')[0]])
 
             wedges, texts = zones_ax.pie(
                 _data, colors=_colors, wedgeprops=dict(width=0.5), startangle=-89)
@@ -490,7 +542,7 @@ def main():
             ax.xaxis.set_major_formatter(major_formatter)
             ax.yaxis.set_major_formatter(zone_formatter)
             for i in range(len(_bar_text)):
-                color = _color_dict_face[_bar_text[i]]
+                color = colors.pose[_bar_text[i]]
                 ax.hlines(_y_dict[_bar_text[i]], _bar_start[i],
                           _bar_end[i], colors=color, lw=20)
 
@@ -574,7 +626,7 @@ def main():
         fig, ax = plt.subplots()
 
         for i in range(len(_bar_text)):
-            color = _color_dict_face[_bar_text[i]]
+            color = colors.pose[_bar_text[i]]
             ax.axvspan(_bar_start[i], _bar_end[i],
                        ymin=0.2, ymax=1,
                        color=color, alpha=0.5, linewidth=0)
@@ -617,7 +669,7 @@ def main():
         fig, ax = plt.subplots(3, 1, sharex=True)
         for a in ax:
             for i in range(len(_bar_text)):
-                color = _color_dict_face[_bar_text[i]]
+                color = colors.pose[_bar_text[i]]
                 a.axvspan(_bar_start[i], _bar_end[i],
                           ymin=0.5, ymax=1,
                           color=color, alpha=0.5, linewidth=0)
