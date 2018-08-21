@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 import traceback
+import os
 import csv
 import sys
 from datetime import datetime, timedelta
@@ -87,6 +88,7 @@ class Color:
                 self.face_loc = items
             elif section == "Monitor Movement":
                 self.monitor_loc = items
+        print("  ... loaded {} categories of colors".format(len(config.sections())))
 
 
 class Monitor:
@@ -109,6 +111,7 @@ class Monitor:
             action = Action(pos, rot, tspeed, aspeed)
 
             self.actions[section] = action
+        print(" ... loaded {} actions".format(len(config.sections())))
 
     def p(self, start, end, length):
         if start == end:
@@ -193,6 +196,7 @@ def process_videofile(file):
 
 def main():
     try:
+        os.path.dirname(os.path.realpath('__file__'))
         args = parser.parse_args()
 
         root = tk.Tk()
@@ -217,6 +221,9 @@ def main():
                 title='Select a log file to analyze:',
                 filetypes=[('Log files', '*.log')])
             print('File: {} selected'.format(filepath))
+        else:
+            filepath = args.filepath
+
         if args.video_data:
             print('Select a video annotation file to append:')
             videopath = filedialog.askopenfilename(
@@ -360,43 +367,6 @@ def main():
                         - float(face_data[i-1][6]))
 
         print('... face zones')
-
-        """
-        fig = plt.figure()
-        ax = fig.gca(projection='3d')
-        ax.set_xlim(-10, 10)
-        ax.set_ylim(-10, 10)
-        ax.set_zlim(-10, 10) 
-
-        ax.set_xlabel('Z')
-        ax.set_ylabel('X')
-        ax.set_zlabel('Y')
-        ax.scatter([0], [0], [0], label='Center Position', color='r')
-        ax.scatter([z[0]], [x[0]], [y[0]], label='Face Position')
-        ax.legend()
-
-        def update(val):
-            time = int(time_slider.val)
-            ax.cla()
-            ax.set_xlim(-10, 10)
-            ax.set_ylim(-10, 10)
-            ax.set_zlim(-10, 10) 
-
-            ax.set_xlabel('Z')
-            ax.set_ylabel('X')
-            ax.set_zlabel('Y')
-            ax.scatter([0], [0], [0], label='Center Position', color='r')
-            ax.scatter([z[time]], [x[time]], [y[time]], label='Face Position')
-            fig.canvas.draw_idle()
-
-        axcolor = 'lightgoldenrodyellow'
-        time_ax = plt.axes([0.25, 0.1, 0.65, 0.03], facecolor=axcolor)
-
-        time_slider = Slider(time_ax, 'timestamp', 0, len(time_data) - 1, valinit=0)
-        time_slider.on_changed(update)
-        """
-
-        print('... computing times')
 
         _y_dict = {
             'Pose Safe': 0,
