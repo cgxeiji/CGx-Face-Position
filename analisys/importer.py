@@ -399,7 +399,7 @@ def main():
                 'CGx Bug': 'white',
                 'Face Lost': 'lightgrey',
                 'Leaning right': '#79c9c3',
-                'Leaning left': '#3c5099',
+                'Leaning left': '#3b9994',
                 'Lean backward': '#ff88ae',
                 'Lean forward': '#cc6cbb',
                 'Head tilt left': '#3c5099',
@@ -552,7 +552,7 @@ def main():
             'Move forward': '#cc6cbb',
             'Move upward': '#ff88ae',
             'Move left': '#79c9c3',
-            'Move right': '#3c5099',
+            'Move right': '#3b9994',
             'Turn clockwise': '#3c5099',
             'Turn counter clockwise': '#4169e1'}
 
