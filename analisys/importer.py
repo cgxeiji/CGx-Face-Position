@@ -63,8 +63,9 @@ class Color:
         self.pose = {}
         self.monitor = {}
         self.video = {}
+        self.face_loc = {}
+        self.monitor_loc = {}
         self.load_colors()
-        pprint.pprint(self.pose)
 
     def load_colors(self):
         print("Loading colors")
@@ -82,6 +83,10 @@ class Color:
                 self.monitor = items
             elif section == "Video":
                 self.video = items
+            elif section == "Head Movement":
+                self.face_loc = items
+            elif section == "Monitor Movement":
+                self.monitor_loc = items
 
 
 class Monitor:
@@ -393,17 +398,6 @@ def main():
 
         print('... computing times')
 
-        _color_dict_face = {
-            'Pose Safe': '#aaf9c6',
-            '': 'white',
-                'CGx Bug': 'white',
-                'Face Lost': 'lightgrey',
-                'Leaning right': '#79c9c3',
-                'Leaning left': '#3b9994',
-                'Lean backward': '#ff88ae',
-                'Lean forward': '#cc6cbb',
-                'Head tilt left': '#3c5099',
-                'Head tilt right': '#4169e1'}
         _y_dict = {
             'Pose Safe': 0,
             '': 0,
@@ -415,8 +409,6 @@ def main():
             'Lean forward': 5,
             'Head tilt left': 6,
             'Head tilt right': 7}
-
-        #_color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'white', 'Leaning right':'saddlebrown', 'Leaning left':'saddlebrown', 'Lean backward':'saddlebrown', 'Lean forward':'saddlebrown', 'Head tilt left':'saddlebrown', 'Head tilt right':'saddlebrown'}
 
         if args.all:
             zones_fig, zones_ax = plt.subplots(
@@ -546,16 +538,6 @@ def main():
                 ax.hlines(_y_dict[_bar_text[i]], _bar_start[i],
                           _bar_end[i], colors=color, lw=20)
 
-        _color_dict = {
-            'Default Position': '#aaf9c6',
-            'Default Fast': 'red',
-            'Move forward': '#cc6cbb',
-            'Move upward': '#ff88ae',
-            'Move left': '#79c9c3',
-            'Move right': '#3b9994',
-            'Turn clockwise': '#3c5099',
-            'Turn counter clockwise': '#4169e1'}
-
         _monitor_text = []
         _monitor_start = []
         _monitor_end = []
@@ -616,7 +598,7 @@ def main():
 
         if args.all:
             for i in range(len(_monitor_text)):
-                color = _color_dict[_monitor_text[i]]
+                color = colors.monitor[_monitor_text[i]]
                 ax.hlines(_y_dict_m[_monitor_text[i]], _monitor_start[i],
                           _monitor_end[i], colors=color, lw=20)
 
@@ -632,7 +614,7 @@ def main():
                        color=color, alpha=0.5, linewidth=0)
 
         for i in range(len(_monitor_text)):
-            color = _color_dict[_monitor_text[i]]
+            color = colors.monitor[_monitor_text[i]]
             ax.axvspan(_monitor_start[i], _monitor_end[i],
                        ymin=0, ymax=0.2,
                        color=color, alpha=0.5, linewidth=0)
@@ -642,7 +624,7 @@ def main():
         ax.set_xlabel("time")
         ax.set_ylabel("Distance (cm) / Speed (cm/s)")
 
-        ax.plot(time_data, distance, 'blue', linewidth=1)
+        ax.plot(time_data, distance, colors.face_loc["Distance"], linewidth=1)
 
         # ax.plot(time_data, face_x, '#9A32CD', linewidth=1)
         # ax.plot(time_data, face_y, '#66CDAA', linewidth=1)
@@ -655,14 +637,14 @@ def main():
         locs = ax.get_xticks(minor=True)
         labels = ax.get_xticklabels(minor=True)
 
-        ax.plot(time_data, speed, 'green', linewidth=1)
+        ax.plot(time_data, speed, colors.face_loc["Speed"], linewidth=1)
         ax.set_ylim(-5, 5)
 
         ax2 = ax.twinx()
-        ax2.set_ylabel("Angle (degrees)", color='red')
-        ax2.tick_params(axis='y', labelcolor='red')
+        ax2.set_ylabel("Angle (degrees)", color=colors.face_loc["A"])
+        ax2.tick_params(axis='y', labelcolor=colors.face_loc["A"])
 
-        ax2.plot(time_data, angle_data, 'red', linewidth=1)
+        ax2.plot(time_data, angle_data, colors.face_loc["A"], linewidth=1)
 
         ax2.set_ylim(-20, 20)
 
@@ -675,7 +657,7 @@ def main():
                           color=color, alpha=0.5, linewidth=0)
 
             for i in range(len(_monitor_text)):
-                color = _color_dict[_monitor_text[i]]
+                color = colors.monitor[_monitor_text[i]]
                 a.axvspan(_monitor_start[i], _monitor_end[i],
                           ymin=0, ymax=0.5,
                           color=color, alpha=0.5, linewidth=0)
@@ -683,31 +665,37 @@ def main():
             ax[0].xaxis.set_major_formatter(major_formatter)
             ax[0].set_ylabel("Monitor Coordinates (cm)")
 
-            ax[0].plot(_monitor_time_data, _monitor_x, 'purple', linewidth=1)
-            ax[0].plot(_monitor_time_data, _monitor_y, 'green', linewidth=1)
-            ax[0].plot(_monitor_time_data, _monitor_z, 'blue', linewidth=1)
+            ax[0].plot(_monitor_time_data, _monitor_x,
+                       colors.monitor_loc["X"], linewidth=1)
+            ax[0].plot(_monitor_time_data, _monitor_y,
+                       colors.monitor_loc["Y"], linewidth=1)
+            ax[0].plot(_monitor_time_data, _monitor_z,
+                       colors.monitor_loc["Z"], linewidth=1)
 
             ax[1].xaxis.set_major_formatter(major_formatter)
             ax[1].set_ylabel("Monitor Angle (degrees)")
 
-            ax[1].plot(_monitor_time_data, _monitor_a, 'purple', linewidth=1)
-            ax[1].plot(_monitor_time_data, _monitor_b, 'green', linewidth=1)
-            ax[1].plot(_monitor_time_data, _monitor_c, 'blue', linewidth=1)
+            ax[1].plot(_monitor_time_data, _monitor_a,
+                       colors.monitor_loc["A"], linewidth=1)
+            ax[1].plot(_monitor_time_data, _monitor_b,
+                       colors.monitor_loc["B"], linewidth=1)
+            ax[1].plot(_monitor_time_data, _monitor_c,
+                       colors.monitor_loc["C"], linewidth=1)
 
             ax[2].xaxis.set_major_formatter(major_formatter)
             ax[2].set_xlabel("time")
             ax[2].set_ylabel("Face Coordinates (cm)")
 
-            ax[2].plot(time_data, face_x, 'purple', linewidth=1)
-            ax[2].plot(time_data, face_y, 'green', linewidth=1)
-            ax[2].plot(time_data, face_z, 'blue', linewidth=1)
+            ax[2].plot(time_data, face_x, colors.face_loc["X"], linewidth=1)
+            ax[2].plot(time_data, face_y, colors.face_loc["Y"], linewidth=1)
+            ax[2].plot(time_data, face_z, colors.face_loc["Z"], linewidth=1)
             ax[2].set_ylim(-5, 5)
 
             ax2 = ax[2].twinx()
-            ax2.set_ylabel("Angle (degrees)", color='red')
-            ax2.tick_params(axis='y', labelcolor='red')
+            ax2.set_ylabel("Angle (degrees)", color=colors.face_loc["A"])
+            ax2.tick_params(axis='y', labelcolor=colors.face_loc["A"])
 
-            ax2.plot(time_data, angle_data, 'red', linewidth=1)
+            ax2.plot(time_data, angle_data, colors.face_loc["A"], linewidth=1)
 
             ax2.set_ylim(-20, 20)
 
