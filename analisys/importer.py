@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 from __future__ import print_function
+import inspect
 import traceback
 import os
 import csv
@@ -72,7 +73,8 @@ class Color:
         print("Loading colors")
         config = ConfigParser.ConfigParser()
         config.optionxform = str
-        config.read('./colors.ini')
+        config.read(
+            '{}/colors.ini'.format(os.path.dirname(inspect.stack()[0][1])))
         for section in config.sections():
             items = {}
             for (name, value) in config.items(section):
@@ -99,7 +101,8 @@ class Monitor:
     def load_actions(self):
         print("Loading actions")
         config = ConfigParser.ConfigParser()
-        config.read('./monitor.ini')
+        config.read(
+            '{}/monitor.ini'.format(os.path.dirname(inspect.stack()[0][1])))
         for section in config.sections():
             pos = (config.getfloat(section, 'x'), config.getfloat(
                 section, 'y'), config.getfloat(section, 'z'))
@@ -196,7 +199,7 @@ def process_videofile(file):
 
 def main():
     try:
-        os.path.dirname(os.path.realpath('__file__'))
+        print(os.path.dirname(inspect.stack()[0][1]))
         args = parser.parse_args()
 
         root = tk.Tk()
@@ -244,9 +247,6 @@ def main():
         if args.video_data:
             with open(videopath) as file:
                 video_data = process_videofile(file)
-
-            pprint.pprint(video_data)
-            return
 
         with open(filepath) as file:
             face_frames, monitor_frames, monitor_motion = process_logfile(file)
