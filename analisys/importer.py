@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 from __future__ import print_function
 import traceback
 import csv
@@ -15,6 +17,19 @@ import matplotlib.collections as collections
 import matplotlib.ticker as ticker
 import ConfigParser
 import pprint
+import argparse
+
+
+parser = argparse.ArgumentParser(
+    description='Graph log files of the robot monitor system')
+parser.add_argument("-a", "--all", dest="all",
+                    action="store_true",
+                    help="Plot all available information")
+parser.add_argument("-v", "--video", dest="video_data",
+                    action="store_true",
+                    help="Load video annotation to sync with the data")
+parser.add_argument("-f", "--file", dest="filepath",
+                    help="Specify the filepath of the log file to process")
 
 
 class Smoother:
@@ -51,7 +66,7 @@ class Monitor:
     def load_actions(self):
         print("Loading actions")
         config = ConfigParser.ConfigParser()
-        config.read('config/monitor.ini')
+        config.read('./monitor.ini')
         for section in config.sections():
             pos = (config.getfloat(section, 'x'), config.getfloat(
                 section, 'y'), config.getfloat(section, 'z'))
@@ -90,12 +105,45 @@ class Monitor:
         return (x, y, z), (a, b, c)
 
 
+def process_logfile(file):
+    face_frames = []
+    monitor_frames = []
+    monitor_motion = []
+
+    content = file.readlines()
+    content = [x.strip() for x in content]
+    for line in content:
+        if 'INFO' in line:
+            sections = line.split('->')
+            if len(sections) > 3:
+                if 'face_data' in sections[2]:
+                    face_time = datetime.strptime(
+                        sections[1], "%Y-%m-%d %H:%M:%S,%f")
+                    data = sections[3].split(', ')
+                    data.append(face_time)
+                    data.append('face')
+                    face_frames.append(data)
+                elif 'monitor_data' in sections[2]:
+                    monitor_time = datetime.strptime(
+                        sections[1], "%Y-%m-%d %H:%M:%S,%f")
+                    data = sections[3].split(',')
+                    data.append(monitor_time)
+                    data.append('monitor')
+                    monitor_frames.append(data)
+                elif 'motion' in sections[2]:
+                    motion_time = datetime.strptime(
+                        sections[1], "%Y-%m-%d %H:%M:%S,%f")
+                    data = [str(sections[3])]
+                    data.append(motion_time)
+                    data.append('motion')
+                    monitor_motion.append(data)
+
+    return face_frames, monitor_frames, monitor_motion
+
+
 def main():
     try:
-        all_enabled = False
-        face_frames = []
-        monitor_frames = []
-        monitor_motion = []
+        args = parser.parse_args()
 
         root = tk.Tk()
         root.withdraw()
@@ -116,51 +164,28 @@ def main():
             2, 3, 3))
 
         filepath = ''
+        videopath = ''
 
-        print('select a file to analyze')
-
-        if len(sys.argv) < 2:
+        if args.filepath is None:
+            print('Select a log file to analyze:')
             filepath = filedialog.askopenfilename()
-        elif sys.argv[1] == "1":
-            all_enabled = True
-            filepath = filedialog.askopenfilename()
-        else:
-            filepath = sys.argv[1]
+            print('File: {} selected'.format(filepath))
+        if args.video_data:
+            print('Select a video annotation file to append:')
+            videopath = filedialog.askopenfilename()
+            print('File: {} selected'.format(videopath))
 
         root.update()
         root.destroy()
 
         print('loading file: {}'.format(filepath))
 
-        with open(filepath) as file:
-            content = file.readlines()
-            content = [x.strip() for x in content]
-            for line in content:
-                if 'INFO' in line:
-                    sections = line.split('->')
-                    if len(sections) > 3:
-                        if 'face_data' in sections[2]:
-                            face_time = datetime.strptime(
-                                sections[1], "%Y-%m-%d %H:%M:%S,%f")
-                            data = sections[3].split(', ')
-                            data.append(face_time)
-                            data.append('face')
-                            face_frames.append(data)
-                        elif 'monitor_data' in sections[2]:
-                            monitor_time = datetime.strptime(
-                                sections[1], "%Y-%m-%d %H:%M:%S,%f")
-                            data = sections[3].split(',')
-                            data.append(monitor_time)
-                            data.append('monitor')
-                            monitor_frames.append(data)
-                        elif 'motion' in sections[2]:
-                            motion_time = datetime.strptime(
-                                sections[1], "%Y-%m-%d %H:%M:%S,%f")
-                            data = [str(sections[3])]
-                            data.append(motion_time)
-                            data.append('motion')
-                            monitor_motion.append(data)
+        face_frames = []
+        monitor_frames = []
+        monitor_motion = []
 
+        with open(filepath) as file:
+            face_frames, monitor_frames, monitor_motion = process_logfile(file)
         print('data loaded\nProcessing data...')
 
         # with open('face_data.csv', 'wb') as csv_file:
@@ -341,7 +366,7 @@ def main():
 
         #_color_dict = {'Pose Safe':'green', '':'white','CGx Bug':'white', 'Face Lost':'white', 'Leaning right':'saddlebrown', 'Leaning left':'saddlebrown', 'Lean backward':'saddlebrown', 'Lean forward':'saddlebrown', 'Head tilt left':'saddlebrown', 'Head tilt right':'saddlebrown'}
 
-        if all_enabled:
+        if args.all:
             zones_fig, zones_ax = plt.subplots(
                 figsize=(6, 3), subplot_kw=dict(aspect="equal"))
 
@@ -370,7 +395,7 @@ def main():
 
         print('... plotting')
 
-        if all_enabled:
+        if args.all:
             _colors = []
             for _d in recipe:
                 _colors.append(_color_dict_face[_d.split('\n')[0]])
@@ -457,7 +482,7 @@ def main():
             which_time = start_time + adder
             return "{}\n({})".format(which_time.strftime("%H:%M:%S"), int(x))
 
-        if all_enabled:
+        if args.all:
             fig, ax = plt.subplots()
             ax.set_yticks(np.arange(-10, 8, 1.0))
             ax.set_title(filepath)
@@ -537,7 +562,7 @@ def main():
 
         _monitor_end.append(monitor_data[len(monitor_data) - 1][0])
 
-        if all_enabled:
+        if args.all:
             for i in range(len(_monitor_text)):
                 color = _color_dict[_monitor_text[i]]
                 ax.hlines(_y_dict_m[_monitor_text[i]], _monitor_start[i],
