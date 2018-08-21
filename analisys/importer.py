@@ -229,10 +229,11 @@ def main():
 
         if args.video_data:
             print('Select a video annotation file to append:')
-            videopath = filedialog.askopenfilename(
+            videopaths = filedialog.askopenfilenames(
                 title='Select a video annotation file to append:',
                 filetypes=[('CSV files', '.csv')])
-            print('File: {} selected'.format(videopath))
+            for p in videopaths:
+                print('File: {} selected'.format(p))
 
         root.update()
         root.destroy()
@@ -242,11 +243,12 @@ def main():
         face_frames = []
         monitor_frames = []
         monitor_motion = []
-        video_data = {}
+        video_data = []
 
         if args.video_data:
-            with open(videopath) as file:
-                video_data = process_videofile(file)
+            for path in videopaths:
+                with open(path) as file:
+                    video_data.append(process_videofile(file))
 
         with open(filepath) as file:
             face_frames, monitor_frames, monitor_motion = process_logfile(file)
@@ -508,16 +510,17 @@ def main():
                 ax.hlines(_y_dict[_bar_text[i]], _bar_start[i],
                           _bar_end[i], colors=color, lw=20)
         if args.video_data:
-            fig, ax = plt.subplots()
-            ax.set_yticks(np.arange(-1, 1, 1.0))
-            ax.set_title(videopath)
-            ax.set_ylim(-1, 1)
-            ax.xaxis.set_major_formatter(major_formatter)
-            ax.yaxis.set_major_formatter(zone_formatter)
-            for i in range(len(video_data["Text"])):
-                color = colors.video.get(video_data["Text"][i], 'black')
-                ax.hlines(0, video_data["Start"][i],
-                          video_data["End"][i], colors=color, lw=20)
+            fig, ax = plt.subplots(len(video_data), 1, sharex=True)
+            for idx in range(len(video_data)):
+                vd = video_data[idx]
+                ax[idx].set_yticks(np.arange(-1, 1, 1.0))
+                ax[idx].set_ylim(-1, 1)
+                ax[idx].xaxis.set_major_formatter(major_formatter)
+                ax[idx].yaxis.set_major_formatter(zone_formatter)
+                for i in range(len(vd["Text"])):
+                    color = colors.video.get(vd["Text"][i], 'black')
+                    ax[idx].hlines(0, vd["Start"][i],
+                                   vd["End"][i], colors=color, lw=20)
 
         _monitor_text = []
         _monitor_start = []
