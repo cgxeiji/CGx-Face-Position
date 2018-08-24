@@ -589,7 +589,7 @@ def main():
         # fig.savefig("{}.pdf".format(
         #     filepath.split('/')[-1]), bbox_inches='tight')
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(180, 6))
 
         for i in range(len(_bar_text)):
             color = colors.pose[_bar_text[i]]
@@ -632,7 +632,10 @@ def main():
 
         ax2.set_ylim(-20, 20)
 
-        fig, ax = plt.subplots(3, 1, sharex=True)
+        fig.savefig("{}.pdf".format(
+            filepath.split('/')[-1]), bbox_inches='tight')
+
+        fig, ax = plt.subplots(3, 1, sharex=True, figsize=(180, 6))
         for a in ax:
             for i in range(len(_bar_text)):
                 color = colors.pose[_bar_text[i]]
@@ -682,6 +685,9 @@ def main():
             ax2.plot(time_data, angle_data, colors.face_loc["A"], linewidth=1)
 
             ax2.set_ylim(-20, 20)
+
+        fig.savefig("{}{}.pdf".format(
+            filepath.split('/')[-1], "_2"), bbox_inches='tight')
 
         print('done!')
 
