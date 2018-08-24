@@ -30,8 +30,15 @@ parser.add_argument("-a", "--all", dest="all",
 parser.add_argument("-v", "--video", dest="video_data",
                     action="store_true",
                     help="Load video annotation to sync with the data")
-parser.add_argument("-f", "--file", dest="filepath",
+parser.add_argument("-F", "--file", dest="filepath",
                     help="Specify the filepath of the log file to process")
+
+parser.add_argument("-f", "--from", dest="from_time",
+                    default="0", type=float,
+                    help="Specify the starting time to plot the graph")
+parser.add_argument("-t", "--to", dest="to_time",
+                    default="0", type=float,
+                    help="Specify the ending time to plot the graph")
 
 
 class Smoother:
@@ -358,6 +365,21 @@ def main():
             prev_pos = current_pos
             prev_time = float(datum[0])
 
+        export_factor = 40
+        export_width = time_data[len(time_data) - 1] / export_factor
+        _section_width = args.to_time - args.from_time
+        if _section_width > 0:
+            export_width = _section_width / export_factor
+        elif _section_width < 0:
+            export_width = (
+                time_data[len(time_data) - 1] - args.from_time) / export_factor
+
+        export_nbins = int(export_width)
+
+        print(time_data[len(time_data) - 1])
+        print(export_width)
+        print(export_nbins)
+
         for i in range(1, len(face_data)):
             if face_data[i][5] not in zones:
                 zones[face_data[i][5]] = 0.0
@@ -503,6 +525,9 @@ def main():
             ax.set_yticks(np.arange(-10, 8, 1.0))
             ax.set_title(filepath)
             ax.set_ylim(-11, 8)
+            ax.set_xlim(
+                left=None if args.from_time == 0 else args.from_time,
+                right=None if args.to_time == 0 else args.to_time)
             ax.xaxis.set_major_formatter(major_formatter)
             ax.yaxis.set_major_formatter(zone_formatter)
             for i in range(len(_bar_text)):
@@ -515,6 +540,9 @@ def main():
                 vd = video_data[idx]
                 ax[idx].set_yticks(np.arange(-1, 1, 1.0))
                 ax[idx].set_ylim(-1, 1)
+                ax[idx].set_xlim(
+                    left=None if args.from_time == 0 else args.from_time,
+                    right=None if args.to_time == 0 else args.to_time)
                 ax[idx].xaxis.set_major_formatter(major_formatter)
                 ax[idx].yaxis.set_major_formatter(zone_formatter)
                 for i in range(len(vd["Text"])):
@@ -589,7 +617,7 @@ def main():
         # fig.savefig("{}.pdf".format(
         #     filepath.split('/')[-1]), bbox_inches='tight')
 
-        fig, ax = plt.subplots(figsize=(180, 6))
+        fig, ax = plt.subplots(figsize=(export_width, 10))
 
         for i in range(len(_bar_text)):
             color = colors.pose[_bar_text[i]]
@@ -607,6 +635,7 @@ def main():
         ax.xaxis.set_major_formatter(major_formatter)
         ax.set_xlabel("time")
         ax.set_ylabel("Distance (cm) / Speed (cm/s)")
+        ax.locator_params(axis='x', nbins=export_nbins)
 
         ax.plot(time_data, distance, colors.face_loc["Distance"], linewidth=1)
 
@@ -622,7 +651,10 @@ def main():
         labels = ax.get_xticklabels(minor=True)
 
         ax.plot(time_data, speed, colors.face_loc["Speed"], linewidth=1)
-        ax.set_ylim(-5, 5)
+        ax.set_ylim(-10, 10)
+        ax.set_xlim(
+            left=None if args.from_time == 0 else args.from_time,
+            right=None if args.to_time == 0 else args.to_time)
 
         ax2 = ax.twinx()
         ax2.set_ylabel("Angle (degrees)", color=colors.face_loc["A"])
@@ -630,12 +662,15 @@ def main():
 
         ax2.plot(time_data, angle_data, colors.face_loc["A"], linewidth=1)
 
-        ax2.set_ylim(-20, 20)
+        ax2.set_ylim(-30, 30)
+        ax2.set_xlim(
+            left=None if args.from_time == 0 else args.from_time,
+            right=None if args.to_time == 0 else args.to_time)
 
         fig.savefig("{}.pdf".format(
             filepath.split('/')[-1]), bbox_inches='tight')
 
-        fig, ax = plt.subplots(3, 1, sharex=True, figsize=(180, 6))
+        fig, ax = plt.subplots(3, 1, sharex=True, figsize=(export_width, 10))
         for a in ax:
             for i in range(len(_bar_text)):
                 color = colors.pose[_bar_text[i]]
@@ -658,6 +693,7 @@ def main():
                        colors.monitor_loc["Y"], linewidth=1)
             ax[0].plot(_monitor_time_data, _monitor_z,
                        colors.monitor_loc["Z"], linewidth=1)
+            ax[0].set_ylim(-10, 10)
 
             ax[1].xaxis.set_major_formatter(major_formatter)
             ax[1].set_ylabel("Monitor Angle (degrees)")
@@ -668,6 +704,7 @@ def main():
                        colors.monitor_loc["B"], linewidth=1)
             ax[1].plot(_monitor_time_data, _monitor_c,
                        colors.monitor_loc["C"], linewidth=1)
+            ax[1].set_ylim(-30, 30)
 
             ax[2].xaxis.set_major_formatter(major_formatter)
             ax[2].set_xlabel("time")
@@ -676,7 +713,8 @@ def main():
             ax[2].plot(time_data, face_x, colors.face_loc["X"], linewidth=1)
             ax[2].plot(time_data, face_y, colors.face_loc["Y"], linewidth=1)
             ax[2].plot(time_data, face_z, colors.face_loc["Z"], linewidth=1)
-            ax[2].set_ylim(-5, 5)
+            ax[2].set_ylim(-10, 10)
+            ax[2].locator_params(axis='x', nbins=export_nbins)
 
             ax2 = ax[2].twinx()
             ax2.set_ylabel("Angle (degrees)", color=colors.face_loc["A"])
@@ -684,7 +722,10 @@ def main():
 
             ax2.plot(time_data, angle_data, colors.face_loc["A"], linewidth=1)
 
-            ax2.set_ylim(-20, 20)
+            ax2.set_ylim(-30, 30)
+            ax2.set_xlim(
+                left=None if args.from_time == 0 else args.from_time,
+                right=None if args.to_time == 0 else args.to_time)
 
         fig.savefig("{}{}.pdf".format(
             filepath.split('/')[-1], "_2"), bbox_inches='tight')
