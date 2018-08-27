@@ -34,10 +34,10 @@ parser.add_argument("-F", "--file", dest="filepath",
                     help="Specify the filepath of the log file to process")
 
 parser.add_argument("-f", "--from", dest="from_time",
-                    default="0", type=float,
+                    default="-1", type=float,
                     help="Specify the starting time to plot the graph")
 parser.add_argument("-t", "--to", dest="to_time",
-                    default="0", type=float,
+                    default="-1", type=float,
                     help="Specify the ending time to plot the graph")
 parser.add_argument("-w", "--width", dest="width",
                     default="0", type=float,
@@ -370,14 +370,15 @@ def main():
 
         export_factor = 40
         export_width = time_data[len(time_data) - 1] / export_factor
-        _section_width = args.to_time - args.from_time
+        _section_width = (args.to_time if args.to_time != -1 else 0
+                          - args.from_time if args.from_time != -1 else 0)
         print(_section_width)
         if _section_width > 0:
             export_width = _section_width / export_factor
         elif _section_width < 0:
             export_width = (
                 time_data[len(time_data) - 1] - args.from_time) / export_factor
-        elif (args.from_time == 0) and (args.to_time == 0):
+        elif (args.from_time == -1) and (args.to_time == -1):
             export_width = 8
 
         if args.width != 0:
@@ -541,8 +542,8 @@ def main():
                 ax.hlines(_y_dict[_bar_text[i]], _bar_start[i],
                           _bar_end[i], colors=color, lw=20)
             ax.set_xlim(
-                left=None if args.from_time == 0 else args.from_time,
-                right=None if args.to_time == 0 else args.to_time)
+                left=None if args.from_time == -1 else args.from_time,
+                right=None if args.to_time == -1 else args.to_time)
 
         if args.video_data:
             fig, ax = plt.subplots(len(video_data), 1, sharex=True)
@@ -557,8 +558,8 @@ def main():
                     ax[idx].hlines(0, vd["Start"][i],
                                    vd["End"][i], colors=color, lw=20)
                 ax[idx].set_xlim(
-                    left=None if args.from_time == 0 else args.from_time,
-                    right=None if args.to_time == 0 else args.to_time)
+                    left=None if args.from_time == -1 else args.from_time,
+                    right=None if args.to_time == -1 else args.to_time)
 
         _monitor_text = []
         _monitor_start = []
@@ -663,8 +664,8 @@ def main():
         ax.plot(time_data, speed, colors.face_loc["Speed"], linewidth=1)
         ax.set_ylim(-10, 10)
         ax.set_xlim(
-            left=None if args.from_time == 0 else args.from_time,
-            right=None if args.to_time == 0 else args.to_time)
+            left=None if args.from_time == -1 else args.from_time,
+            right=None if args.to_time == -1 else args.to_time)
 
         ax2 = ax.twinx()
         ax2.set_ylabel("Angle (degrees)", color=colors.face_loc["A"])
@@ -674,8 +675,8 @@ def main():
 
         ax2.set_ylim(-30, 30)
         ax2.set_xlim(
-            left=None if args.from_time == 0 else args.from_time,
-            right=None if args.to_time == 0 else args.to_time)
+            left=None if args.from_time == -1 else args.from_time,
+            right=None if args.to_time == -1 else args.to_time)
 
         fig.savefig("{}.pdf".format(
             filepath.split('/')[-1]), bbox_inches='tight')
@@ -726,8 +727,8 @@ def main():
             ax[2].set_ylim(-10, 10)
             ax[2].locator_params(axis='x', nbins=export_nbins)
             ax[2].set_xlim(
-                left=None if args.from_time == 0 else args.from_time,
-                right=None if args.to_time == 0 else args.to_time)
+                left=None if args.from_time == -1 else args.from_time,
+                right=None if args.to_time == -1 else args.to_time)
 
             ax2 = ax[2].twinx()
             ax2.set_ylabel("Angle (degrees)", color=colors.face_loc["A"])
@@ -737,8 +738,8 @@ def main():
 
             ax2.set_ylim(-30, 30)
             ax2.set_xlim(
-                left=None if args.from_time == 0 else args.from_time,
-                right=None if args.to_time == 0 else args.to_time)
+                left=None if args.from_time == -1 else args.from_time,
+                right=None if args.to_time == -1 else args.to_time)
 
         fig.savefig("{}{}.pdf".format(
             filepath.split('/')[-1], "_2"), bbox_inches='tight')
