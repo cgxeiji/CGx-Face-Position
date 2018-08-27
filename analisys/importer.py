@@ -371,12 +371,13 @@ def main():
         export_factor = 40
         export_width = time_data[len(time_data) - 1] / export_factor
         _section_width = args.to_time - args.from_time
+        print(_section_width)
         if _section_width > 0:
             export_width = _section_width / export_factor
         elif _section_width < 0:
             export_width = (
                 time_data[len(time_data) - 1] - args.from_time) / export_factor
-        elif _section_width == 0:
+        elif (args.from_time == 0) and (args.to_time == 0):
             export_width = 8
 
         if args.width != 0:
@@ -724,6 +725,9 @@ def main():
             ax[2].plot(time_data, face_z, colors.face_loc["Z"], linewidth=1)
             ax[2].set_ylim(-10, 10)
             ax[2].locator_params(axis='x', nbins=export_nbins)
+            ax[2].set_xlim(
+                left=None if args.from_time == 0 else args.from_time,
+                right=None if args.to_time == 0 else args.to_time)
 
             ax2 = ax[2].twinx()
             ax2.set_ylabel("Angle (degrees)", color=colors.face_loc["A"])
