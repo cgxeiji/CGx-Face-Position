@@ -39,6 +39,9 @@ parser.add_argument("-f", "--from", dest="from_time",
 parser.add_argument("-t", "--to", dest="to_time",
                     default="0", type=float,
                     help="Specify the ending time to plot the graph")
+parser.add_argument("-w", "--width", dest="width",
+                    default="0", type=float,
+                    help="Set a custom WIDTH in cm")
 
 
 class Smoother:
@@ -375,6 +378,9 @@ def main():
                 time_data[len(time_data) - 1] - args.from_time) / export_factor
         elif _section_width == 0:
             export_width = 8
+
+        if args.width != 0:
+            export_width = args.width * 0.393701
 
         export_nbins = int(export_width)
 
