@@ -373,6 +373,8 @@ def main():
         elif _section_width < 0:
             export_width = (
                 time_data[len(time_data) - 1] - args.from_time) / export_factor
+        elif _section_width == 0:
+            export_width = 8
 
         export_nbins = int(export_width)
 
@@ -525,30 +527,31 @@ def main():
             ax.set_yticks(np.arange(-10, 8, 1.0))
             ax.set_title(filepath)
             ax.set_ylim(-11, 8)
-            ax.set_xlim(
-                left=None if args.from_time == 0 else args.from_time,
-                right=None if args.to_time == 0 else args.to_time)
             ax.xaxis.set_major_formatter(major_formatter)
             ax.yaxis.set_major_formatter(zone_formatter)
             for i in range(len(_bar_text)):
                 color = colors.pose[_bar_text[i]]
                 ax.hlines(_y_dict[_bar_text[i]], _bar_start[i],
                           _bar_end[i], colors=color, lw=20)
+            ax.set_xlim(
+                left=None if args.from_time == 0 else args.from_time,
+                right=None if args.to_time == 0 else args.to_time)
+
         if args.video_data:
             fig, ax = plt.subplots(len(video_data), 1, sharex=True)
             for idx in range(len(video_data)):
                 vd = video_data[idx]
                 ax[idx].set_yticks(np.arange(-1, 1, 1.0))
                 ax[idx].set_ylim(-1, 1)
-                ax[idx].set_xlim(
-                    left=None if args.from_time == 0 else args.from_time,
-                    right=None if args.to_time == 0 else args.to_time)
                 ax[idx].xaxis.set_major_formatter(major_formatter)
                 ax[idx].yaxis.set_major_formatter(zone_formatter)
                 for i in range(len(vd["Text"])):
                     color = colors.video.get(vd["Text"][i], 'black')
                     ax[idx].hlines(0, vd["Start"][i],
                                    vd["End"][i], colors=color, lw=20)
+                ax[idx].set_xlim(
+                    left=None if args.from_time == 0 else args.from_time,
+                    right=None if args.to_time == 0 else args.to_time)
 
         _monitor_text = []
         _monitor_start = []
