@@ -29,6 +29,8 @@ def main():
     camera.set(4, 1080)  # 1024
 
     picture_save_enabled = False
+    picture_save = None
+    # TODO: add picture save per folder
 
     visual = Visual(camera)
     visual.start()
