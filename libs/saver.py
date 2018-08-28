@@ -1,4 +1,5 @@
 import threading
+import datetime
 import time
 
 import cv2
@@ -13,12 +14,19 @@ class PictureSaver(threading.Thread):
         self.path = path
         self.img = None
         self.running = False
+        self.font = cv2.FONT_HERSHEY_SIMPLEX
 
     def run(self):
         self.running = True
         while self.running:
             if time.time() - self.timer > self.timeout:
                 if self.img is not None:
+                    self.img = cv2.rectangle(
+                        self.img, (0, 0), (200, 30), (30, 30, 30), -1)
+                    cv2.putText(self.img,
+                                "time: {:%%H:%M:%S.%f}".format(
+                                    datetime.datetime.now()),
+                                (10, 10), self.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
                     cv2.imwrite("{}/{}.png".format(self.path,
                                                    self.picture_counter), self.img)
                     self.picture_counter += 1
