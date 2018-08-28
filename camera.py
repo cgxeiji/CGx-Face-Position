@@ -68,8 +68,6 @@ def main():
         while True:
             ret, img = camera.read()
             save_img = img
-            if img is not None:
-                img = cv2.resize(img, (1280, 1024))
 
             if visual.img is not None:
                 try:
