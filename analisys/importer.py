@@ -676,7 +676,7 @@ def main():
         labels = ax.get_xticklabels(minor=True)
 
         ax.plot(time_data, speed, colors.face_loc["Speed"], linewidth=1)
-        ax.set_ylim(-10, 10)
+        ax.set_ylim(-15, 15)
         ax.set_xlim(
             left=None if args.from_time == -1 else args.from_time,
             right=None if args.to_time == -1 else args.to_time)
@@ -718,7 +718,7 @@ def main():
                        colors.monitor_loc["Y"], linewidth=1)
             ax[0].plot(_monitor_time_data, _monitor_z,
                        colors.monitor_loc["Z"], linewidth=1)
-            ax[0].set_ylim(-10, 10)
+            ax[0].set_ylim(-15, 15)
 
             ax[1].xaxis.set_major_formatter(major_formatter)
             ax[1].set_ylabel("Monitor Angle (degrees)")
@@ -738,7 +738,7 @@ def main():
             ax[2].plot(time_data, face_x, colors.face_loc["X"], linewidth=1)
             ax[2].plot(time_data, face_y, colors.face_loc["Y"], linewidth=1)
             ax[2].plot(time_data, face_z, colors.face_loc["Z"], linewidth=1)
-            ax[2].set_ylim(-10, 10)
+            ax[2].set_ylim(-15, 15)
             ax[2].locator_params(axis='x', nbins=export_nbins)
             ax[2].set_xlim(
                 left=None if args.from_time == -1 else args.from_time,
