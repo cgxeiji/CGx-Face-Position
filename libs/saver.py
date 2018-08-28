@@ -15,14 +15,15 @@ class PictureSaver(threading.Thread):
         self.img = None
         self.running = False
         self.font = cv2.FONT_HERSHEY_SIMPLEX
+        self.buffer = None
 
     def run(self):
         self.running = True
         while self.running:
             if time.time() - self.timer > self.timeout:
-                if self.img is not None:
+                if self.buffer is not None:
                     self.img = cv2.rectangle(
-                        self.img, (0, 1035), (380, 1080), (30, 30, 30), -1)
+                        self.buffer, (0, 1035), (380, 1080), (30, 30, 30), -1)
                     cv2.putText(self.img,
                                 "time: {:%H:%M:%S.%f}".format(
                                     datetime.datetime.now()),
@@ -33,7 +34,7 @@ class PictureSaver(threading.Thread):
                 self.timer = time.time()
 
     def update(self, img):
-        self.img = img
+        self.buffer = img
 
     def stop(self):
         self.running = False
