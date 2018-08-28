@@ -10,6 +10,7 @@ import time
 import traceback
 import types
 from sys import stdout
+import random
 
 import numpy as np
 
@@ -51,6 +52,9 @@ def main():
     face_lost_timeout = gcv('face lost timeout', 'float')
 
     monitor_is_moving = False
+    is_experiment = False
+    min_time = gcv('min monitor time', 'int')
+    max_time = gcv('max monitor time', 'int')
 
     move_timer = time.time()
     move_timeout = 1 # second
@@ -104,10 +108,11 @@ def main():
 
                 before_time = time.time()
 
-            if time.time() - move_timer > move_timeout:
-                bridge.do_random()
-                monitor_is_moving = True
-                move_timer = time.time()
+            if is_experiment and not monitor_is_moving:
+                if time.time() - move_timer > move_timeout:
+                    bridge.do_random()
+                    monitor_is_moving = True
+                    move_timer = time.time()
 
             if picture_save_enabled:
                 picture_save.update(save_img)
@@ -127,6 +132,8 @@ def main():
                 logging.info("Manual override to Default Location")
                 bridge.do_action("Default Fast")
                 monitor_is_moving = False
+                move_timeout = random.randint(min_time, max_time)
+                move_timer = time.time()
             elif c == ord('t'):
                 tracking = not tracking
                 print("Tracking: {}".format(tracking))
@@ -136,10 +143,18 @@ def main():
             elif c == ord('r'):
                 print("Reading activity")
                 logging.info("Reading activity")
+            elif c == ord('s'):
+                print("Start experiment!")
+                logging.info("Start experiment!")
+                move_timeout = random.randint(min_time, max_time)
+                move_timer = time.time()
+                is_experiment = True
             elif c == ord(' '):
                 logging.info("user->{}".format("detect"))
                 bridge.do_action("Default Fast")
                 monitor_is_moving = False
+                move_timeout = random.randint(min_time, max_time)
+                move_timer = time.time()
             elif c == ord('p'):
                 if not picture_save_enabled:
                     save_img_path = "img/{:%Y-%m-%d_%H-%M-%S}".format(
