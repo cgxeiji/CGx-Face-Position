@@ -11,6 +11,7 @@ from libs.roi import ROI
 from libs.eye import Eye
 from libs.utils import Smoother
 
+
 class Visual(threading.Thread):
     def __init__(self, camera):
         threading.Thread.__init__(self)
@@ -64,6 +65,8 @@ class Visual(threading.Thread):
 
             if img is None:
                 continue
+            else:
+                img = cv2.resize(img, (1280, 1024))
 
             hud = np.zeros(img.shape, np.uint8)
 
@@ -77,9 +80,10 @@ class Visual(threading.Thread):
                 for angle in self.test_angles:
                     if angle != 0:
                         cols, rows, _c = roi.shape
-                        M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
-                        _roi = cv2.warpAffine(roi,M,(cols,rows))
-                    faces = self.faceCascade.detectMultiScale(_roi, 1.05, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
+                        M = cv2.getRotationMatrix2D((cols/2, rows/2), angle, 1)
+                        _roi = cv2.warpAffine(roi, M, (cols, rows))
+                    faces = self.faceCascade.detectMultiScale(
+                        _roi, 1.05, 2, 0 | cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
                     if len(faces) != 0:
                         self.current_angle = angle
                         roi = _roi
@@ -89,9 +93,10 @@ class Visual(threading.Thread):
                 for angle in self.test_angles:
                     if angle != 0:
                         cols, rows = __roi.shape
-                        M = cv2.getRotationMatrix2D((cols/2,rows/2),angle,1)
-                        _roi = cv2.warpAffine(__roi,M,(cols,rows))
-                    faces = self.faceCascade.detectMultiScale(_roi, 1.05, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
+                        M = cv2.getRotationMatrix2D((cols/2, rows/2), angle, 1)
+                        _roi = cv2.warpAffine(__roi, M, (cols, rows))
+                    faces = self.faceCascade.detectMultiScale(
+                        _roi, 1.05, 2, 0 | cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
                     if len(faces) != 0:
                         current_angle = angle
                         #roi = _roi
@@ -111,25 +116,29 @@ class Visual(threading.Thread):
                 self.face_roi.set_roi(x, y, w, h)
                 pt1, pt2 = self.face_roi.get_rect()
                 hud = cv2.rectangle(hud, pt1, pt2, (0, 0, 255))
-            
-                #if self.face_roi.is_enabled():
+
+                # if self.face_roi.is_enabled():
                 eyes = []
                 cols, rows, _c = roi.shape
                 min_size = tuple(int(x / 6) for x in (cols, rows))
                 max_size = tuple(int(x / 4) for x in (cols, rows))
-                eyes = self.eyeCascade.detectMultiScale(roi, 1.01, 2, 0|cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
+                eyes = self.eyeCascade.detectMultiScale(
+                    roi, 1.01, 2, 0 | cv2.CASCADE_SCALE_IMAGE, min_size, max_size)
 
                 if len(eyes) != 0:
                     #self.tryout = self.MAX_TRYOUTS
                     for (x, y, w, h) in eyes:
                         if y > rows/3:
                             continue
-                        
-                        roi = cv2.rectangle(roi, (x, y), (x+w, y+h), (255, 0, 0))
+
+                        roi = cv2.rectangle(
+                            roi, (x, y), (x+w, y+h), (255, 0, 0))
                         text = "({}, {})".format(x, y)
-                        cv2.putText(roi, text, (x, y), self.font, 0.5,(255,255,255),1,cv2.LINE_AA)
-                        
-                        (x1, y1) = Visual.rotate((x+w/2, y+h/2), (cols/2, rows/2), self.current_angle)
+                        cv2.putText(roi, text, (x, y), self.font,
+                                    0.5, (255, 255, 255), 1, cv2.LINE_AA)
+
+                        (x1, y1) = Visual.rotate((x+w/2, y+h/2),
+                                                 (cols/2, rows/2), self.current_angle)
 
                         x1 /= self.face_roi._scale_factor
                         y1 /= self.face_roi._scale_factor
@@ -151,28 +160,38 @@ class Visual(threading.Thread):
                 self.eye_left.input(eyes_loc[1])
                 self.eyes_detected = True
 
-            hud = cv2.line(hud, self.eye_right.position(), self.eye_left.position(), (0, 255, 0))
+            hud = cv2.line(hud, self.eye_right.position(),
+                           self.eye_left.position(), (0, 255, 0))
             (rx, ry) = self.eye_right.position()
             (lx, ly) = self.eye_left.position()
 
-            hud = cv2.circle(hud, self.eye_right.position(), 5, (255, 255, 255))
+            hud = cv2.circle(hud, self.eye_right.position(),
+                             5, (255, 255, 255))
             hud = cv2.circle(hud, self.eye_left.position(), 5, (255, 255, 255))
 
             self.face_angle.input(np.arctan2(ly - ry, lx - rx) * 180.0 / np.pi)
             _d = np.sqrt(np.power(ly - ry, 2) + np.power(lx - rx, 2))
-            self.face_distance.input(0.0043 * np.power(_d, 2) - 1.2678 * _d + 116.02)
+            self.face_distance.input(
+                0.0043 * np.power(_d, 2) - 1.2678 * _d + 116.02)
 
             #pt1, pt2 = self.face_roi.get_rect()
             pt1 = (10, 45)
-            hud = cv2.rectangle(hud, (pt1[0] - 10, pt1[1] + 25), (pt1[0] + 800, pt1[1] - 45), (30, 30, 30), -1)
-            text = "angle: {:+06.2f} degrees                    [{:%Y-%m-%d %H:%M:%S}]   Face({}) Eyes({})".format(self.face_angle.value(), datetime.datetime.now(), self.face_roi.is_enabled(), self.eyes_detected)
-            cv2.putText(hud, text, (pt1[0], pt1[1] - 25), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
-            text = "distance: {0:+07.2f} cm [{1:+08.2f} pixels]".format(self.face_distance.value(), _d)
-            cv2.putText(hud, text, (pt1[0], pt1[1] - 10), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
+            hud = cv2.rectangle(
+                hud, (pt1[0] - 10, pt1[1] + 25), (pt1[0] + 800, pt1[1] - 45), (30, 30, 30), -1)
+            text = "angle: {:+06.2f} degrees                    [{:%Y-%m-%d %H:%M:%S}]   Face({}) Eyes({})".format(
+                self.face_angle.value(), datetime.datetime.now(), self.face_roi.is_enabled(), self.eyes_detected)
+            cv2.putText(hud, text, (pt1[0], pt1[1] - 25),
+                        self.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+            text = "distance: {0:+07.2f} cm [{1:+08.2f} pixels]".format(
+                self.face_distance.value(), _d)
+            cv2.putText(hud, text, (pt1[0], pt1[1] - 10),
+                        self.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
             (_x, _y, _z) = self.get_center_pixel()
             (__x, __y, __z) = self.get_center()
-            text = "{:+08.2f} [{:+08.2f}] x {:+08.2f} [{:+08.2f}] y {:+08.2f} [{:+08.2f}] z".format(__x, _x, __y, _y, __z, _z)
-            cv2.putText(hud, text, (pt1[0], pt1[1] + 5), self.font, 0.5,(255, 255, 255), 1,cv2.LINE_AA)
+            text = "{:+08.2f} [{:+08.2f}] x {:+08.2f} [{:+08.2f}] y {:+08.2f} [{:+08.2f}] z".format(
+                __x, _x, __y, _y, __z, _z)
+            cv2.putText(hud, text, (pt1[0], pt1[1] + 5),
+                        self.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
             self.face_detected = self.face_roi.is_enabled()
 
@@ -181,7 +200,7 @@ class Visual(threading.Thread):
 
     def stop(self):
         self.running = False
-    
+
     def get_center_pixel(self):
         return ((self.eye_left.position()[0] + self.eye_right.position()[0]) / 2, (self.eye_left.position()[1] + self.eye_right.position()[1]) / 2, self.face_distance.value())
 
