@@ -138,6 +138,8 @@ def main():
             elif c == ord('r'):
                 print("Reading activity")
                 logging.info("Reading activity")
+            elif c == ord(' '):
+                logging.info("user->{}".format("detect"))
             elif c == ord('p'):
                 if not picture_save_enabled:
                     save_img_path = "img/{:%Y-%m-%d_%H-%M-%S}".format(
