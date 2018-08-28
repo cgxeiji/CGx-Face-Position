@@ -4,6 +4,7 @@ import ConfigParser
 import logging
 import threading
 import time
+from random import shuffle
 
 from pose_sphere import PoseSphere
 from utils import get_config_variable as gcv
@@ -36,6 +37,8 @@ class Bridge:
 
         self.load_poses()
         self.load_actions()
+
+        self.actions_bucket = []
 
     def load_poses(self):
         config = ConfigParser.ConfigParser()
@@ -170,6 +173,25 @@ class Bridge:
                 print("Doing {} as robot.move({} -> {}, {} -> {})".format(action.name,
                                                                           action.position, action.tspeed, action.rotation, action.aspeed))
                 break
+
+    def shuffle(self):
+        self.actions_bucket = []
+
+        for action in self.actions:
+            if "Default" not in action.name:
+                self.actions_bucket.append(action.name)
+
+        shuffle(self.actions_bucket)
+        print(self.actions_bucket)
+        logging.info("shuffle->{}".format(self.actions_bucket))
+
+    def do_random(self):
+        if len(self.actions_bucket) > 0:
+            action = self.actions_bucket.pop(0)
+            self.do_action(action)
+            return True
+
+        return False
 
     def do_animation(self):
         for action in self.animations:

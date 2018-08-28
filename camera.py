@@ -40,6 +40,7 @@ def main():
     tracking = False
 
     bridge = Bridge(robot)
+    bridge.shuffle()
 
     cross_point = (0, 0, 0)
 
@@ -48,6 +49,11 @@ def main():
     face_lost = False
 
     face_lost_timeout = gcv('face lost timeout', 'float')
+
+    monitor_is_moving = False
+
+    move_timer = time.time()
+    move_timeout = 1 # second
 
     try:
         while True:
@@ -75,31 +81,17 @@ def main():
             _pos = visual.get_center()
             _angle = visual.get_angle()
 
-            pose_name = "CGx Bug"
-            pose_time = 0.0
-
-            if visual.face_detected:
-                face_time = time.time()
-                face_lost = False
-                pose_name, pose_time = bridge.eval(_pos, _angle)
-            elif time.time() - face_time > face_lost_timeout and not face_lost:
-                bridge.restart_zone_timers()
-                threading.Timer(0.1, bridge.do_animation).start()
-                face_lost = True
-            else:
-                pose_name = "Face Lost"
-                pose_time = time.time() - face_time
-
-            location = "{} {:5.2f}s".format(pose_name, pose_time)
-
             cols, rows, dim = img.shape
             img = cv2.line(
                 img, (cross_point[0], 0), (cross_point[0], cols), color)
             img = cv2.line(
                 img, (0, cross_point[1]), (rows, cross_point[1]), color)
-            cv2.putText(img, "Zone: {}".format(location), (10, 65),
-                        visual.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+            cv2.putText(img, "Monitor moving: {}".format(monitor_is_moving),
+                (10, 65), visual.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
             cv2.imshow("img", img)
+
+            pose_name = ""
+            pose_time = 0
 
             (ex, ey, ed) = visual.get_center()
 
@@ -111,6 +103,11 @@ def main():
                     x, y, z, visual.get_angle()))
 
                 before_time = time.time()
+
+            if time.time() - move_timer > move_timeout:
+                bridge.do_random()
+                monitor_is_moving = True
+                move_timer = time.time()
 
             if picture_save_enabled:
                 picture_save.update(save_img)
@@ -128,7 +125,8 @@ def main():
             elif c == ord('z'):
                 print("Manual override to Default Location")
                 logging.info("Manual override to Default Location")
-                robot.move((0, 0, 0), (0, 0, 0))
+                bridge.do_action("Default Fast")
+                monitor_is_moving = False
             elif c == ord('t'):
                 tracking = not tracking
                 print("Tracking: {}".format(tracking))
@@ -141,6 +139,7 @@ def main():
             elif c == ord(' '):
                 logging.info("user->{}".format("detect"))
                 bridge.do_action("Default Fast")
+                monitor_is_moving = False
             elif c == ord('p'):
                 if not picture_save_enabled:
                     save_img_path = "img/{:%Y-%m-%d_%H-%M-%S}".format(
