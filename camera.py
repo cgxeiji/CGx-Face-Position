@@ -29,21 +29,6 @@ def main():
 
     picture_save_enabled = False
 
-    save_img_path = "img/{:%Y-%m-%d_%H-%M-%S}".format(
-        datetime.datetime.now())
-
-    try:
-        os.mkdir("img")
-        print("New directory 'img' created!")
-    except OSError:
-        pass
-
-    try:
-        os.mkdir(save_img_path)
-        print("Directory {} created!".format(save_img_path))
-    except OSError:
-        print("Directory {} already exists!".format(save_img_path))
-
     visual = Visual(camera)
     visual.start()
 
@@ -155,7 +140,22 @@ def main():
                 logging.info("Reading activity")
             elif c == ord('p'):
                 if not picture_save_enabled:
-                    picture_save = PictureSaver(1, save_img_path)
+                    save_img_path = "img/{:%Y-%m-%d_%H-%M-%S}".format(
+                        datetime.datetime.now())
+
+                    try:
+                        os.mkdir("img")
+                        print("New directory 'img' created!")
+                    except OSError:
+                        pass
+
+                    try:
+                        os.mkdir(save_img_path)
+                        print("Directory {} created!".format(save_img_path))
+                    except OSError:
+                        print("Directory {} already exists!".format(save_img_path))
+
+                    picture_save = PictureSaver(0.5, save_img_path)
                     picture_save.start()
                     logging.info("Start recording!")
                 else:

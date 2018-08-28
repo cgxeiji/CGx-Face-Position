@@ -27,7 +27,7 @@ class PictureSaver(threading.Thread):
                                 "time: {:%H:%M:%S.%f}".format(
                                     datetime.datetime.now()),
                                 (10, 1070), self.font, 1, (255, 255, 255), 2, cv2.LINE_AA)
-                    cv2.imwrite("{}/{}.png".format(self.path,
+                    cv2.imwrite("{}/{}.jpg".format(self.path,
                                                    self.picture_counter), self.img)
                     self.picture_counter += 1
                 self.timer = time.time()
