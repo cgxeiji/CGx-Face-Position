@@ -24,10 +24,25 @@ from libs.visual import Visual
 
 def main():
     camera = cv2.VideoCapture(gcv('camera id', 'int'))
-    camera.set(3, 1280)
-    camera.set(4, 1024)
+    camera.set(3, 1920)  # 1280
+    camera.set(4, 1080)  # 1024
 
     picture_save_enabled = False
+
+    save_img_path = "img/{:%Y-%m-%d_%H-%M-%S}".format(
+        datetime.datetime.now())
+
+    try:
+        os.mkdir("img")
+        print("New directory 'img' created!")
+    except OSError:
+        pass
+
+    try:
+        os.mkdir(save_img_path)
+        print("Directory {} created!".format(save_img_path))
+    except OSError:
+        print("Directory {} already exists!".format(save_img_path))
 
     visual = Visual(camera)
     visual.start()
@@ -52,6 +67,8 @@ def main():
     try:
         while True:
             ret, img = camera.read()
+            save_img = img
+            img = cv2.resize(img, (1280, 1024))
 
             if visual.img is not None:
                 try:
@@ -112,7 +129,7 @@ def main():
                 before_time = time.time()
 
             if picture_save_enabled:
-                picture_save.update(img)
+                picture_save.update(save_img)
 
             c = cv2.waitKey(1)
             if c == 27:
@@ -139,12 +156,7 @@ def main():
                 logging.info("Reading activity")
             elif c == ord('p'):
                 if not picture_save_enabled:
-                    picture_folder_path = 'frames/{:%Y%m%d_%H%M%S}'.format(
-                        datetime.datetime.now())
-                    if not os.path.exists(picture_folder_path):
-                        os.makedirs(picture_folder_path)
-
-                    picture_save = PictureSaver(5, picture_folder_path)
+                    picture_save = PictureSaver(1, save_img_path)
                     picture_save.start()
                     logging.info("Start recording!")
                 else:

@@ -13,7 +13,6 @@ class PictureSaver(threading.Thread):
         self.path = path
         self.img = None
         self.running = False
-        self._scale_factor = 0.5
 
     def run(self):
         self.running = True
@@ -26,8 +25,7 @@ class PictureSaver(threading.Thread):
                 self.timer = time.time()
 
     def update(self, img):
-        self.img = cv2.resize(
-            img, (0, 0), fx=self._scale_factor, fy=self._scale_factor)
+        self.img = img
 
     def stop(self):
         self.running = False
