@@ -58,6 +58,8 @@ def main():
 
     move_timer = time.time()
     move_timeout = 1 # second
+    user_input_timer = time.time()
+    user_input_timeout = gcv('monitor timeout', 'int')
 
     try:
         while True:
@@ -113,6 +115,14 @@ def main():
                     bridge.do_random()
                     monitor_is_moving = True
                     move_timer = time.time()
+                    user_input_timer = time.time()
+            elif is_experiment and monitor_is_moving:
+                if time.time() - user_input_timer > user_input_timeout:
+                    logging.info("user->{}".format("timeout"))
+                    bridge.do_action("Default Fast")
+                    monitor_is_moving = False
+                    move_timeout = random.randint(min_time, max_time)
+                    move_timer = time.time()
 
             if picture_save_enabled:
                 picture_save.update(save_img)
@@ -129,7 +139,7 @@ def main():
                     visual.get_center(), visual.get_angle(), location))
             elif c == ord('z'):
                 print("Manual override to Default Location")
-                logging.info("Manual override to Default Location")
+                logging.info("user->override")
                 bridge.do_action("Default Fast")
                 monitor_is_moving = False
                 move_timeout = random.randint(min_time, max_time)
@@ -194,7 +204,6 @@ def main():
         visual.join()
         network.stop()
         robot.stop()
-
 
 def on_data_received(self, client, data):
     print("From '{}': {}".format(client.name, data))
