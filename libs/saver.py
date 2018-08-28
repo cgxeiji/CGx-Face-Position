@@ -22,11 +22,11 @@ class PictureSaver(threading.Thread):
             if time.time() - self.timer > self.timeout:
                 if self.img is not None:
                     self.img = cv2.rectangle(
-                        self.img, (0, 0), (200, 30), (30, 30, 30), -1)
+                        self.img, (0, 1035), (380, 1080), (30, 30, 30), -1)
                     cv2.putText(self.img,
-                                "time: {:%%H:%M:%S.%f}".format(
+                                "time: {:%H:%M:%S.%f}".format(
                                     datetime.datetime.now()),
-                                (10, 10), self.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                                (10, 1070), self.font, 1, (255, 255, 255), 2, cv2.LINE_AA)
                     cv2.imwrite("{}/{}.png".format(self.path,
                                                    self.picture_counter), self.img)
                     self.picture_counter += 1
