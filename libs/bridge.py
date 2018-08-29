@@ -189,9 +189,9 @@ class Bridge:
         if len(self.actions_bucket) > 0:
             action = self.actions_bucket.pop(0)
             self.do_action(action)
-            return True
+            return action
 
-        return False
+        return ''
 
     def do_animation(self):
         for action in self.animations:
