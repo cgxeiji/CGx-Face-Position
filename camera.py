@@ -31,6 +31,7 @@ def main():
     picture_save_enabled = False
     picture_save = None
     # TODO: add picture save per folder
+    current_save_folder = "Setup"
 
     visual = Visual(camera)
     visual.start()
@@ -59,7 +60,7 @@ def main():
     max_time = gcv('max monitor time', 'int')
 
     move_timer = time.time()
-    move_timeout = 1 # second
+    move_timeout = 1  # second
     user_input_timer = time.time()
     user_input_timeout = gcv('monitor timeout', 'int')
 
@@ -95,7 +96,7 @@ def main():
             img = cv2.line(
                 img, (0, cross_point[1]), (rows, cross_point[1]), color)
             cv2.putText(img, "Monitor moving: {}".format(monitor_is_moving),
-                (10, 65), visual.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                        (10, 65), visual.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
             cv2.imshow("img", img)
 
             pose_name = ""
@@ -114,7 +115,13 @@ def main():
 
             if is_experiment and not monitor_is_moving:
                 if time.time() - move_timer > move_timeout:
-                    bridge.do_random()
+                    _action = bridge.do_random()
+                    if _action == '':
+                        _action = "After"
+                    if picture_save_enabled:
+                        current_save_folder = _action
+                        picture_save.cd(
+                            "{}/{}".format(save_img_path, current_save_folder))
                     monitor_is_moving = True
                     move_timer = time.time()
                     user_input_timer = time.time()
@@ -184,7 +191,8 @@ def main():
                     except OSError:
                         print("Directory {} already exists!".format(save_img_path))
 
-                    picture_save = PictureSaver(0.5, save_img_path)
+                    picture_save = PictureSaver(0.5,
+                                                "{}/{}".format(save_img_path, current_save_folder))
                     picture_save.start()
                     logging.info("Start recording!")
                 else:
@@ -206,6 +214,7 @@ def main():
         visual.join()
         network.stop()
         robot.stop()
+
 
 def on_data_received(self, client, data):
     print("From '{}': {}".format(client.name, data))

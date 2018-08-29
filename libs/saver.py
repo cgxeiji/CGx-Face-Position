@@ -12,6 +12,8 @@ class PictureSaver(threading.Thread):
         self.timeout = timeout
         self.picture_counter = 0
         self.path = path
+        self.buffer_path = path
+        self.cd(path)
         self.img = None
         self.running = False
         self.font = cv2.FONT_HERSHEY_SIMPLEX
@@ -28,6 +30,8 @@ class PictureSaver(threading.Thread):
                                 "time: {:%H:%M:%S.%f}".format(
                                     datetime.datetime.now()),
                                 (10, 1070), self.font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                    if self.buffer_path != self.path:
+                        self.path = self.buffer_path
                     cv2.imwrite("{}/{}.jpg".format(self.path,
                                                    self.picture_counter), self.img)
                     self.picture_counter += 1
@@ -35,6 +39,14 @@ class PictureSaver(threading.Thread):
 
     def update(self, img):
         self.buffer = img
+
+    def cd(self, path):
+        self.buffer_path = path
+        try:
+            os.mkdir(self.buffer_path)
+            print("Directory {} created!".format(self.buffer_path))
+        except OSError:
+            print("Directory {} already exists!".format(self.buffer_path))
 
     def stop(self):
         self.running = False
