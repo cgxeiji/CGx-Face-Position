@@ -28,11 +28,13 @@ class PictureSaver(threading.Thread):
                 if self.buffer is not None:
                     self.img = cv2.rectangle(
                         self.buffer, (0, 1035), (390, 1080), (30, 30, 30), -1)
+                    adder = ""
                     if self.detected:
                         cv2.putText(self.img,
                                     "time: {:%H:%M:%S.%f} [{}]".format(
                                         datetime.datetime.now(), "x"),
                                     (10, 1070), self.font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                        adder = "p"
                         self.detected = False
                     else:
                         cv2.putText(self.img,
@@ -41,8 +43,8 @@ class PictureSaver(threading.Thread):
                                     (10, 1070), self.font, 1, (255, 255, 255), 2, cv2.LINE_AA)
                     if self.buffer_path != self.path:
                         self.path = self.buffer_path
-                    cv2.imwrite("{}/{}.jpg".format(self.path,
-                                                   self.picture_counter), self.img)
+                    cv2.imwrite("{}/{}{}.jpg".format(self.path,
+                                                     self.picture_counter, adder), self.img)
                     self.picture_counter += 1
                 self.timer = time.time()
 
