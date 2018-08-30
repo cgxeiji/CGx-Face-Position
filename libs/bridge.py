@@ -21,8 +21,8 @@ class _Action:
         self.exe_time = self.calc_time()
 
     def calc_time(self):
-        dtime = _d2o(self.position) / tspeed
-        atime = _d2o(self.rotation) / aspeed
+        dtime = self._d2o(self.position) / tspeed
+        atime = self._d2o(self.rotation) / aspeed
         return max(dtime, atime)
 
     def _d2o(self, pos):
