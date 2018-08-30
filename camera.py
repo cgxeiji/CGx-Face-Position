@@ -176,8 +176,8 @@ def main():
                 is_experiment = True
             elif c == ord(' '):
                 logging.info("user->{}".format("detect"))
-                bridge.do_action("Default Fast")
                 if space_override:
+                    bridge.do_action("Default Fast")
                     monitor_is_moving = False
                     move_timeout = random.randint(min_time, max_time)
                     move_timer = time.time()
