@@ -5,6 +5,7 @@ import logging
 import threading
 import time
 from random import shuffle
+import numpy as np
 
 from pose_sphere import PoseSphere
 from utils import get_config_variable as gcv
@@ -17,7 +18,17 @@ class _Action:
         self.rotation = (a, b, c)
         self.tspeed = tspeed
         self.aspeed = aspeed
-        self.exe_time = 0.0
+        self.exe_time = self.calc_time()
+
+    def calc_time(self):
+        dtime = _d2o(self.position) / tspeed
+        atime = _d2o(self.rotation) / aspeed
+        return max(dtime, atime)
+
+    def _d2o(self, pos):
+        return np.sqrt(np.square(pos[0]) +
+                       np.square(pos[1]) +
+                       np.square(pos[2]))
 
 
 class Bridge:
@@ -104,10 +115,12 @@ class Bridge:
             self.actions.append(action)
 
         for action in self.actions:
-            logging.info("Action: '{}' @ [{} -> {}][{} -> {}]".format(
-                action.name, action.position, action.tspeed, action.rotation, action.aspeed))
-            print("Action: '{}' @ [{} -> {}][{} -> {}]".format(action.name,
-                                                               action.position, action.tspeed, action.rotation, action.aspeed))
+            logging.info("Action: '{}' @ [{} -> {}][{} -> {}][{}]".format(
+                action.name, action.position, action.tspeed,
+                action.rotation, action.aspeed, action.exe_time))
+            print("Action: '{}' @ [{} -> {}][{} -> {}][{}]".format(
+                action.name, action.position, action.tspeed,
+                action.rotation, action.aspeed, action.exe_time))
         for action in self.animations:
             logging.info("Animation: '{}' @ [{} -> {}][{} -> {}]".format(
                 action.name, action.position, action.tspeed, action.rotation, action.aspeed))
@@ -179,19 +192,20 @@ class Bridge:
 
         for action in self.actions:
             if "Default" not in action.name:
-                self.actions_bucket.append(action.name)
+                self.actions_bucket.append(action)
 
         shuffle(self.actions_bucket)
-        print(self.actions_bucket)
-        logging.info("shuffle->{}".format(self.actions_bucket))
+        print([action.name for action in self.actions_bucket])
+        logging.info(
+            "shuffle->{}".format([action.name for action in self.actions_bucket]))
 
     def do_random(self):
         if len(self.actions_bucket) > 0:
             action = self.actions_bucket.pop(0)
-            self.do_action(action)
-            return action
+            self.do_action(action.name)
+            return action.name, action.exe_time
 
-        return ''
+        return '', 0.0
 
     def do_animation(self):
         for action in self.animations:

@@ -10,7 +10,8 @@ from utils import get_config_variable as gcv
 
 class Robot:
     def __init__(self):
-        self.network = NetManager(gcv('robot ip'), int(gcv('robot port')))
+        self.network = NetManager(
+            gcv('robot ip', 'string'), gcv('robot port', 'int'))
         # Subnet mask: 255.255.255.0
         self.network.start()
         time.sleep(1)
