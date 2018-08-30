@@ -174,6 +174,8 @@ def main():
                 monitor_is_moving = False
                 move_timeout = random.randint(min_time, max_time)
                 move_timer = time.time()
+                if picture_save_enabled:
+                    picture_save().set_detected(True)
             elif c == ord('p'):
                 if not picture_save_enabled:
                     save_img_path = "img/{:%Y-%m-%d_%H-%M-%S}".format(
