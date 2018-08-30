@@ -99,9 +99,10 @@ def main():
                 img, (0, cross_point[1]), (rows, cross_point[1]), color)
             cv2.putText(img, "Monitor moving: {}, for {}s".format(
                 monitor_is_moving,
-                np.clip(user_input_timeout - (time.time() - user_input_timer),
-                        0, None)),
-                        (10, 65), visual.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                (np.clip(user_input_timeout -
+                         (time.time() - user_input_timer)) if monitor_is_moving else 0,
+                 0, None)),
+                (10, 65), visual.font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
             cv2.imshow("img", img)
 
             pose_name = ""
