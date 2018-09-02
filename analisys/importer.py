@@ -42,6 +42,9 @@ parser.add_argument("-t", "--to", dest="to_time",
 parser.add_argument("-w", "--width", dest="width",
                     default="0", type=float,
                     help="Set a custom WIDTH in cm")
+parser.add_argument("-u", "--user", dest="user_study",
+                    action="store_true",
+                    help="Process only User Study data")
 
 
 class Smoother:
@@ -188,6 +191,50 @@ def process_logfile(file):
     return face_frames, monitor_frames, monitor_motion
 
 
+def process_userfile(file):
+    face_frames = []
+    monitor_frames = []
+    monitor_motion = []
+    user_frames = []
+
+    content = file.readlines()
+    content = [x.strip() for x in content]
+    for line in content:
+        if 'INFO' in line:
+            sections = line.split('->')
+            if len(sections) > 3:
+                if 'face_data' in sections[2]:
+                    face_time = datetime.strptime(
+                        sections[1], "%Y-%m-%d %H:%M:%S,%f")
+                    data = sections[3].split(', ')
+                    data.append(face_time)
+                    data.append('face')
+                    face_frames.append(data)
+                elif 'monitor_data' in sections[2]:
+                    monitor_time = datetime.strptime(
+                        sections[1], "%Y-%m-%d %H:%M:%S,%f")
+                    data = sections[3].split(',')
+                    data.append(monitor_time)
+                    data.append('monitor')
+                    monitor_frames.append(data)
+                elif 'motion' in sections[2]:
+                    motion_time = datetime.strptime(
+                        sections[1], "%Y-%m-%d %H:%M:%S,%f")
+                    data = [str(sections[3])]
+                    data.append(motion_time)
+                    data.append('motion')
+                    monitor_motion.append(data)
+                elif 'user' in sections[2]:
+                    user_time = datetime.strptime(
+                        sections[1], "%Y-%m-%d %H:%M:%S,%f")
+                    data = [str(sections[3])]
+                    data.append(user_time)
+                    data.append('user')
+                    user_frames.append(data)
+
+    return face_frames, monitor_frames, monitor_motion, user_frames
+
+
 def process_videofile(file):
     data = {}
     data["Text"] = []
@@ -228,22 +275,29 @@ def main():
         filepath = ''
         videopath = ''
 
-        if args.filepath is None:
+        if args.user_study:
             print('Select a log file to analyze:')
             filepath = filedialog.askopenfilename(
                 title='Select a log file to analyze:',
                 filetypes=[('Log files', '*.log')])
             print('File: {} selected'.format(filepath))
         else:
-            filepath = args.filepath
+            if args.filepath is None:
+                print('Select a log file to analyze:')
+                filepath = filedialog.askopenfilename(
+                    title='Select a log file to analyze:',
+                    filetypes=[('Log files', '*.log')])
+                print('File: {} selected'.format(filepath))
+            else:
+                filepath = args.filepath
 
-        if args.video_data:
-            print('Select a video annotation file to append:')
-            videopaths = filedialog.askopenfilenames(
-                title='Select a video annotation file to append:',
-                filetypes=[('CSV files', '.csv')])
-            for p in videopaths:
-                print('File: {} selected'.format(p))
+            if args.video_data:
+                print('Select a video annotation file to append:')
+                videopaths = filedialog.askopenfilenames(
+                    title='Select a video annotation file to append:',
+                    filetypes=[('CSV files', '.csv')])
+                for p in videopaths:
+                    print('File: {} selected'.format(p))
 
         root.update()
         root.destroy()
@@ -254,6 +308,7 @@ def main():
         monitor_frames = []
         monitor_motion = []
         video_data = []
+        user_frames = []
 
         if args.video_data:
             for path in videopaths:
@@ -261,7 +316,12 @@ def main():
                     video_data.append(process_videofile(file))
 
         with open(filepath) as file:
-            face_frames, monitor_frames, monitor_motion = process_logfile(file)
+            if args.user_study:
+                face_frames, monitor_frames, monitor_motion, user_frames = process_userfile(
+                    file)
+            else:
+                face_frames, monitor_frames, monitor_motion = process_logfile(
+                    file)
         print('data loaded\nProcessing data...')
 
         # with open('face_data.csv', 'wb') as csv_file:
@@ -286,17 +346,8 @@ def main():
 
         face_data = []
         start_time = None
-        for frame in face_frames:
-            if start_time == None:
-                start_time = frame[len(frame) - 2]
-            timestamp = (frame[len(frame) - 2] -
-                         start_time).total_seconds()
-            datum = []
-            datum.append(timestamp)
-            datum.extend(frame[0:6])
-            if "Pose Safe" in datum[5]:
-                datum[5] = "Pose Safe"
-            face_data.append(datum)
+
+        start_times = []
 
         monitor_data = []
         monitor_labels = {
@@ -309,10 +360,9 @@ def main():
             'Turn clockwise': -6,
             'Turn counter clockwise': -7}
         for frame in monitor_motion:
-            if not monitor_labels.has_key(frame[0]):
-                continue
-            if start_time == None:
+            if frame[0] != "Default Fast":
                 start_time = frame[len(frame) - 2]
+                start_times.append(start_time)
             timestamp = (frame[len(frame) - 2]
                          - start_time).total_seconds()
             datum = []
@@ -320,6 +370,44 @@ def main():
             datum.append(frame[0])
             datum.append(monitor.actions[frame[0]])
             monitor_data.append(datum)
+
+        stidx = 0
+        for frame in face_frames:
+            if stidx < len(start_times)-1:
+                timestamp = (frame[len(frame) - 2] -
+                             start_times[stidx+1]).total_seconds()
+                if timestamp > 0:
+                    stidx += 1
+
+            timestamp = (frame[len(frame) - 2] -
+                         start_times[stidx]).total_seconds()
+            datum = []
+            datum.append(timestamp)
+            datum.extend(frame[0:6])
+            if "Pose Safe" in datum[5]:
+                datum[5] = "Pose Safe"
+            face_data.append(datum)
+
+        pprint.pprint(start_times)
+
+        user_data = []
+        stidx = 0
+        for frame in user_frames:
+            if stidx < len(start_times)-1:
+                timestamp = (frame[len(frame) - 2] -
+                             start_times[stidx+1]).total_seconds()
+                if timestamp > 0:
+                    stidx += 1
+
+            timestamp = (frame[len(frame) - 2] -
+                         start_times[stidx]).total_seconds()
+            datum = []
+            datum.append(timestamp)
+            datum.append(frame[0])
+            if frame[0] == 'detect':
+                user_data.append(datum)
+
+        pprint.pprint(user_data)
 
         print('... monitor motion')
 
@@ -338,7 +426,16 @@ def main():
         zones = {}
         prev_pos = np.array((0, 0, 0))
         prev_time = 0
+        ranges = []
+        ranges.append(0)
+        ridx = 0
+        _pt = -999999
         for datum in face_data:
+            if float(datum[0]) < _pt:
+                ranges.append(ridx)
+            ridx += 1
+            _pt = float(datum[0])
+
             time_data.append(float(datum[0]))
             x.append(float(datum[1]))
             y.append(float(datum[2]))
@@ -367,6 +464,19 @@ def main():
             angle_data.append(smooth_angle.value())
             prev_pos = current_pos
             prev_time = float(datum[0])
+
+        ranges.append(ridx)
+
+        user_ranges = []
+        user_ranges.append(0)
+        ridx = 0
+        _pt = -999999
+        for datum in user_data:
+            if float(datum[0]) < _pt:
+                user_ranges.append(ridx)
+            ridx += 1
+            _pt = float(datum[0])
+        user_ranges.append(ridx)
 
         export_factor = 40
         export_width = time_data[len(time_data) - 1] / export_factor
@@ -476,7 +586,7 @@ def main():
                     1.35*np.sign(_x), 1.4*_y), horizontalalignment=horizontalalignment, **kw)
 
             zones_ax.set_title("Pose Distribution")
-            #zones_ax.legend(wedges, recipe)
+            # zones_ax.legend(wedges, recipe)
 
         face_in_safe = []
         _bar_text = []
@@ -575,6 +685,52 @@ def main():
                         left=None if args.from_time == -1 else args.from_time,
                         right=None if args.to_time == -1 else args.to_time)
 
+        if args.user_study:
+            for jdx in range(len(start_times)/5):
+                fig, ax = plt.subplots(5, 1, sharex=True)
+                for idx in range(5):
+                    if idx+jdx > len(start_times) - 1:
+                        break
+                    ax[idx].xaxis.set_major_formatter(major_formatter)
+                    ax[idx].set_xlabel("time")
+                    ax[idx].set_ylabel("{}".format(
+                        monitor_data[(idx+jdx)*2][1]), rotation=45)
+
+                    ax[idx].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_x[ranges[idx+jdx]:ranges[idx+jdx+1]],
+                                 colors.face_loc["X"], linewidth=1)
+                    ax[idx].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_y[ranges[idx+jdx]:ranges[idx+jdx+1]],
+                                 colors.face_loc["Y"], linewidth=1)
+                    ax[idx].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_z[ranges[idx+jdx]:ranges[idx+jdx+1]],
+                                 colors.face_loc["Z"], linewidth=1)
+
+                    ux = [i[0] for i in user_data[user_ranges[idx+jdx]                                                  :user_ranges[idx+jdx+1]]]
+                    uy = np.zeros(
+                        len(user_data[user_ranges[idx+jdx]:user_ranges[idx+jdx+1]]))
+
+                    ax[idx].set_ylim(-15, 15)
+                    ax[idx].locator_params(axis='x', nbins=export_nbins)
+                    ax[idx].set_xlim(
+                        left=0,
+                        right=500)
+
+                    ax2 = ax[idx].twinx()
+                    ax2.set_ylabel("Angle (degrees)",
+                                   color=colors.face_loc["A"])
+                    ax2.tick_params(axis='y', labelcolor=colors.face_loc["A"])
+
+                    ax2.plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], angle_data[ranges[idx+jdx]:ranges[idx+jdx+1]],
+                             colors.face_loc["A"], linewidth=1)
+
+                    ax2.set_ylim(-30, 30)
+                    ax2.set_xlim(
+                        left=0,
+                        right=500)
+
+                    ax[idx].plot(ux, uy, 'k*', markersize=10)
+
+            plt.show()
+            return
+
         _monitor_text = []
         _monitor_start = []
         _monitor_end = []
@@ -635,7 +791,7 @@ def main():
 
         if args.all:
             for i in range(len(_monitor_text)):
-                color = colors.monitor[_monitor_text[i]]
+                color = colors.monitor.get(_monitor_text[i], 'grey')
                 ax.hlines(_y_dict_m[_monitor_text[i]], _monitor_start[i],
                           _monitor_end[i], colors=color, lw=20)
 
@@ -651,7 +807,7 @@ def main():
                        color=color, alpha=0.5, linewidth=0)
 
         for i in range(len(_monitor_text)):
-            color = colors.monitor[_monitor_text[i]]
+            color = colors.monitor.get(_monitor_text[i], 'grey')
             ax.axvspan(_monitor_start[i], _monitor_end[i],
                        ymin=0, ymax=0.2,
                        color=color, alpha=0.5, linewidth=0)
@@ -704,56 +860,56 @@ def main():
                           color=color, alpha=0.5, linewidth=0)
 
             for i in range(len(_monitor_text)):
-                color = colors.monitor[_monitor_text[i]]
+                color = colors.monitor.get(_monitor_text[i], 'grey')
                 a.axvspan(_monitor_start[i], _monitor_end[i],
                           ymin=0, ymax=0.5,
                           color=color, alpha=0.5, linewidth=0)
 
-            ax[0].xaxis.set_major_formatter(major_formatter)
-            ax[0].set_ylabel("Monitor Coordinates (cm)")
+        ax[0].xaxis.set_major_formatter(major_formatter)
+        ax[0].set_ylabel("Monitor Coordinates (cm)")
 
-            ax[0].plot(_monitor_time_data, _monitor_x,
-                       colors.monitor_loc["X"], linewidth=1)
-            ax[0].plot(_monitor_time_data, _monitor_y,
-                       colors.monitor_loc["Y"], linewidth=1)
-            ax[0].plot(_monitor_time_data, _monitor_z,
-                       colors.monitor_loc["Z"], linewidth=1)
-            ax[0].set_ylim(-15, 15)
+        ax[0].plot(_monitor_time_data, _monitor_x,
+                   colors.monitor_loc["X"], linewidth=1)
+        ax[0].plot(_monitor_time_data, _monitor_y,
+                   colors.monitor_loc["Y"], linewidth=1)
+        ax[0].plot(_monitor_time_data, _monitor_z,
+                   colors.monitor_loc["Z"], linewidth=1)
+        ax[0].set_ylim(-15, 15)
 
-            ax[1].xaxis.set_major_formatter(major_formatter)
-            ax[1].set_ylabel("Monitor Angle (degrees)")
+        ax[1].xaxis.set_major_formatter(major_formatter)
+        ax[1].set_ylabel("Monitor Angle (degrees)")
 
-            ax[1].plot(_monitor_time_data, _monitor_a,
-                       colors.monitor_loc["A"], linewidth=1)
-            ax[1].plot(_monitor_time_data, _monitor_b,
-                       colors.monitor_loc["B"], linewidth=1)
-            ax[1].plot(_monitor_time_data, _monitor_c,
-                       colors.monitor_loc["C"], linewidth=1)
-            ax[1].set_ylim(-30, 30)
+        ax[1].plot(_monitor_time_data, _monitor_a,
+                   colors.monitor_loc["A"], linewidth=1)
+        ax[1].plot(_monitor_time_data, _monitor_b,
+                   colors.monitor_loc["B"], linewidth=1)
+        ax[1].plot(_monitor_time_data, _monitor_c,
+                   colors.monitor_loc["C"], linewidth=1)
+        ax[1].set_ylim(-30, 30)
 
-            ax[2].xaxis.set_major_formatter(major_formatter)
-            ax[2].set_xlabel("time")
-            ax[2].set_ylabel("Face Coordinates (cm)")
+        ax[2].xaxis.set_major_formatter(major_formatter)
+        ax[2].set_xlabel("time")
+        ax[2].set_ylabel("Face Coordinates (cm)")
 
-            ax[2].plot(time_data, face_x, colors.face_loc["X"], linewidth=1)
-            ax[2].plot(time_data, face_y, colors.face_loc["Y"], linewidth=1)
-            ax[2].plot(time_data, face_z, colors.face_loc["Z"], linewidth=1)
-            ax[2].set_ylim(-15, 15)
-            ax[2].locator_params(axis='x', nbins=export_nbins)
-            ax[2].set_xlim(
-                left=None if args.from_time == -1 else args.from_time,
-                right=None if args.to_time == -1 else args.to_time)
+        ax[2].plot(time_data, face_x, colors.face_loc["X"], linewidth=1)
+        ax[2].plot(time_data, face_y, colors.face_loc["Y"], linewidth=1)
+        ax[2].plot(time_data, face_z, colors.face_loc["Z"], linewidth=1)
+        ax[2].set_ylim(-15, 15)
+        ax[2].locator_params(axis='x', nbins=export_nbins)
+        ax[2].set_xlim(
+            left=None if args.from_time == -1 else args.from_time,
+            right=None if args.to_time == -1 else args.to_time)
 
-            ax2 = ax[2].twinx()
-            ax2.set_ylabel("Angle (degrees)", color=colors.face_loc["A"])
-            ax2.tick_params(axis='y', labelcolor=colors.face_loc["A"])
+        ax2 = ax[2].twinx()
+        ax2.set_ylabel("Angle (degrees)", color=colors.face_loc["A"])
+        ax2.tick_params(axis='y', labelcolor=colors.face_loc["A"])
 
-            ax2.plot(time_data, angle_data, colors.face_loc["A"], linewidth=1)
+        ax2.plot(time_data, angle_data, colors.face_loc["A"], linewidth=1)
 
-            ax2.set_ylim(-30, 30)
-            ax2.set_xlim(
-                left=None if args.from_time == -1 else args.from_time,
-                right=None if args.to_time == -1 else args.to_time)
+        ax2.set_ylim(-30, 30)
+        ax2.set_xlim(
+            left=None if args.from_time == -1 else args.from_time,
+            right=None if args.to_time == -1 else args.to_time)
 
         fig.savefig("{}{}.pdf".format(
             filepath.split('/')[-1], "_2"), bbox_inches='tight')
