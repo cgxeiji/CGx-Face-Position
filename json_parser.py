@@ -7,6 +7,7 @@ import pprint
 import numpy as np
 import glob
 import cPickle as pickle
+from libs.utils import Smoother
 
 
 parser = argparse.ArgumentParser(
@@ -47,6 +48,11 @@ def main():
     face_z = []
     face_a = []
 
+    smooth_x = Smoother(20)
+    smooth_y = Smoother(20)
+    smooth_z = Smoother(20)
+    smooth_a = Smoother(20)
+
     for eyes in eyes_list:
         rx = eyes[0, 0]
         ry = eyes[0, 1]
@@ -70,11 +76,17 @@ def main():
         _y -= baseY
         _z -= baseZ
 
-        face.append((_x, _y, _z, _angle))
-        face_x.append(_x)
-        face_y.append(_y)
-        face_z.append(_z)
-        face_a.append(_angle)
+        smooth_x.input(_x)
+        smooth_y.input(_y)
+        smooth_z.input(_z)
+        smooth_a.input(_angle)
+
+        face.append((smooth_x.value(), smooth_y.value(),
+                     smooth_z.value(), smooth_a.value()))
+        face_x.append(smooth_x.value())
+        face_y.append(smooth_y.value())
+        face_z.append(smooth_z.value())
+        face_a.append(smooth_a.value())
 
     # pprint.pprint(eyes_list)
     # pprint.pprint(face)
