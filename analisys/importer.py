@@ -392,11 +392,15 @@ def main():
 
         user_data = []
         stidx = 0
+        ridx = 0
+        user_ranges = []
+        user_ranges.append(0)
         for frame in user_frames:
             if stidx < len(start_times)-1:
                 timestamp = (frame[len(frame) - 2] -
                              start_times[stidx+1]).total_seconds()
                 if timestamp > 0:
+                    user_ranges.append(ridx)
                     stidx += 1
 
             timestamp = (frame[len(frame) - 2] -
@@ -406,6 +410,8 @@ def main():
             datum.append(frame[0])
             if frame[0] == 'detect':
                 user_data.append(datum)
+                ridx += 1
+        user_ranges.append(ridx)
 
         pprint.pprint(user_data)
 
@@ -467,16 +473,16 @@ def main():
 
         ranges.append(ridx)
 
-        user_ranges = []
-        user_ranges.append(0)
-        ridx = 0
-        _pt = -999999
-        for datum in user_data:
-            if float(datum[0]) < _pt:
-                user_ranges.append(ridx)
-            ridx += 1
-            _pt = float(datum[0])
-        user_ranges.append(ridx)
+        # user_ranges = []
+        # user_ranges.append(0)
+        # ridx = 0
+        # _pt = -999999
+        # for datum in user_data:
+        #     if float(datum[0]) < _pt:
+        #         user_ranges.append(ridx)
+        #     ridx += 1
+        #     _pt = float(datum[0])
+        # user_ranges.append(ridx)
 
         export_factor = 40
         export_width = time_data[len(time_data) - 1] / export_factor
@@ -686,15 +692,21 @@ def main():
                         right=None if args.to_time == -1 else args.to_time)
 
         if args.user_study:
+            titles = [i[1] for i in monitor_data]
+            # pprint.pprint(titles)
+            print(len(user_ranges))
+            print(len(start_times))
             for jdx in range(len(start_times)/5):
                 fig, ax = plt.subplots(5, 1, sharex=True)
+                jdx *= 5
                 for idx in range(5):
                     if idx+jdx > len(start_times) - 1:
                         break
                     ax[idx].xaxis.set_major_formatter(major_formatter)
                     ax[idx].set_xlabel("time")
                     ax[idx].set_ylabel("{}".format(
-                        monitor_data[(idx+jdx)*2][1]), rotation=45)
+                        titles[(idx+jdx)*2]), rotation=45)
+                    print(idx+jdx)
 
                     ax[idx].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_x[ranges[idx+jdx]:ranges[idx+jdx+1]],
                                  colors.face_loc["X"], linewidth=1)
@@ -703,7 +715,8 @@ def main():
                     ax[idx].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_z[ranges[idx+jdx]:ranges[idx+jdx+1]],
                                  colors.face_loc["Z"], linewidth=1)
 
-                    ux = [i[0] for i in user_data[user_ranges[idx+jdx]                                                  :user_ranges[idx+jdx+1]]]
+                    ux = [i[0] for i in user_data[user_ranges[idx+jdx]
+                        :user_ranges[idx+jdx+1]]]
                     uy = np.zeros(
                         len(user_data[user_ranges[idx+jdx]:user_ranges[idx+jdx+1]]))
 
