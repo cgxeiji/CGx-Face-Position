@@ -692,7 +692,10 @@ def main():
 
         if args.user_study:
             titles = [i[1] for i in monitor_data]
+            _times = [i[0] for i in monitor_data]
+
             # pprint.pprint(titles)
+            # pprint.pprint(monitor_data)
             print(len(user_ranges))
             print(len(start_times))
             for jdx in range(len(start_times)/5):
@@ -714,12 +717,13 @@ def main():
                     ax[idx].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_z[ranges[idx+jdx]:ranges[idx+jdx+1]],
                                  colors.face_loc["Z"], linewidth=1)
 
-                    ux = [i[0] for i in user_data[user_ranges[idx+jdx]
-                        :user_ranges[idx+jdx+1]]]
+                    ax[idx].axvline(x=_times[2*(idx+jdx) + 1], color='black')
+
+                    ux = [i[0] for i in user_data[user_ranges[idx+jdx]                                                  :user_ranges[idx+jdx+1]]]
                     uy = np.zeros(
                         len(user_data[user_ranges[idx+jdx]:user_ranges[idx+jdx+1]]))
 
-                    ax[idx].set_ylim(-15, 15)
+                    ax[idx].set_ylim(-10, 10)
                     ax[idx].locator_params(axis='x', nbins=export_nbins)
                     ax[idx].set_xlim(
                         left=0,
@@ -728,12 +732,13 @@ def main():
                     ax2 = ax[idx].twinx()
                     ax2.set_ylabel("Angle (degrees)",
                                    color=colors.face_loc["A"])
-                    ax2.tick_params(axis='y', labelcolor=colors.face_loc["A"])
+                    ax2.tick_params(
+                        axis='y', labelcolor=colors.face_loc["A"])
 
                     ax2.plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], angle_data[ranges[idx+jdx]:ranges[idx+jdx+1]],
                              colors.face_loc["A"], linewidth=1)
 
-                    ax2.set_ylim(-30, 30)
+                    ax2.set_ylim(-20, 20)
                     ax2.set_xlim(
                         left=0,
                         right=500)
