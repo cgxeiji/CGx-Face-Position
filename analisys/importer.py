@@ -719,7 +719,7 @@ def main():
 
                     ax[idx].axvline(x=_times[2*(idx+jdx) + 1], color='black')
 
-                    ux = [i[0] for i in user_data[user_ranges[idx+jdx]                                                  :user_ranges[idx+jdx+1]]]
+                    ux = [i[0] for i in user_data[user_ranges[idx+jdx]:user_ranges[idx+jdx+1]]]
                     uy = np.zeros(
                         len(user_data[user_ranges[idx+jdx]:user_ranges[idx+jdx+1]]))
 
@@ -744,6 +744,9 @@ def main():
                         right=500)
 
                     ax[idx].plot(ux, uy, 'k*', markersize=10)
+
+                fig.savefig("{}{}.pdf".format(
+                    filepath.split('/')[-1], jdx), bbox_inches='tight')
 
             plt.show()
             return
