@@ -5,6 +5,7 @@ import argparse
 import pprint
 import numpy as np
 import glob
+import cPickle as pickle
 
 
 parser = argparse.ArgumentParser(
@@ -19,12 +20,12 @@ def main():
     eyes_list = []
 
     filenames = glob.glob(folderpath + "/*.json")
-    print("Files:")
-    pprint.pprint(filenames)
 
+    print("Loading files from: {}".format(folderpath))
     for filename in filenames:
         with open(filename) as file:
             data = json.load(file)
+            print(" .. loading: {}".format(filename))
 
             data_array = np.asarray(
                 data['people'][0]['pose_keypoints_2d']).reshape((-1, 3))
@@ -62,8 +63,12 @@ def main():
 
         face.append((_x, _y, _z, _angle))
 
-    pprint.pprint(eyes_list)
-    pprint.pprint(face)
+    # pprint.pprint(eyes_list)
+    # pprint.pprint(face)
+
+    save_path = "{}/{}.cgx".format(folderpath, "face")
+    pickle.dump(face, open(save_path, "wb"))
+    print("Data saved at: {}".format(save_path))
 
 
 if __name__ == "__main__":
