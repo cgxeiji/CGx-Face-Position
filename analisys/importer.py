@@ -643,8 +643,7 @@ def main():
         @ticker.FuncFormatter
         def major_formatter(x, pos):
             adder = timedelta(seconds=x)
-            which_time = start_time + adder
-            return "{}\n({})".format(which_time.strftime("%H:%M:%S"), int(x))
+            return "{}\n({})".format(str(adder), x)
 
         if args.all:
             fig, ax = plt.subplots()
