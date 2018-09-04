@@ -61,10 +61,10 @@ def main():
     l_eye = Eye()
 
     for eyes in eyes_list:
-        rx = eyes[0, 0] / 32
-        ry = eyes[0, 1] / 32
-        lx = eyes[1, 0] / 32
-        ly = eyes[1, 1] / 32
+        rx = eyes[0, 0] / 128
+        ry = eyes[0, 1] / 128
+        lx = eyes[1, 0] / 128
+        ly = eyes[1, 1] / 128
 
         # r_eye.input((_rx, _ry))
         # l_eye.input((_lx, _ly))
