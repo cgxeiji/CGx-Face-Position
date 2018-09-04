@@ -49,28 +49,28 @@ def main():
     face_z = []
     face_a = []
 
-    smooth_x = Smoother(20)
-    smooth_y = Smoother(20)
-    smooth_z = Smoother(20)
-    smooth_a = Smoother(20)
+    smooth_x = Smoother(10)
+    smooth_y = Smoother(10)
+    smooth_z = Smoother(10)
+    smooth_a = Smoother(10)
 
-    face_angle = Smoother(10)
-    face_distance = Smoother(10)
+    face_angle = Smoother(5)
+    face_distance = Smoother(5)
 
     r_eye = Eye()
     l_eye = Eye()
 
     for eyes in eyes_list:
-        rx = eyes[0, 0]
-        ry = eyes[0, 1]
-        lx = eyes[1, 0]
-        ly = eyes[1, 1]
+        rx = eyes[0, 0] / 32
+        ry = eyes[0, 1] / 32
+        lx = eyes[1, 0] / 32
+        ly = eyes[1, 1] / 32
 
-        r_eye.input((rx, ry))
-        l_eye.input((lx, ly))
+        # r_eye.input((_rx, _ry))
+        # l_eye.input((_lx, _ly))
 
-        (rx, ry) = r_eye.position()
-        (lx, ly) = l_eye.position()
+        # (rx, ry) = r_eye.position()
+        # (lx, ly) = l_eye.position()
 
         _angle = (np.arctan2(ly - ry, lx - rx) * 180.0 / np.pi)
         _d = np.sqrt(np.power(ly - ry, 2) + np.power(lx - rx, 2))
