@@ -8,6 +8,7 @@ import numpy as np
 import glob
 import cPickle as pickle
 from libs.utils import Smoother
+from libs.eye import Eye
 
 
 parser = argparse.ArgumentParser(
@@ -53,11 +54,23 @@ def main():
     smooth_z = Smoother(20)
     smooth_a = Smoother(20)
 
+    face_angle = Smoother(10)
+    face_distance = Smoother(10)
+
+    r_eye = Eye()
+    l_eye = Eye()
+
     for eyes in eyes_list:
         rx = eyes[0, 0]
         ry = eyes[0, 1]
         lx = eyes[1, 0]
         ly = eyes[1, 1]
+
+        r_eye.input((rx, ry))
+        l_eye.input((lx, ly))
+
+        (rx, ry) = r_eye.position()
+        (lx, ly) = l_eye.position()
 
         _angle = (np.arctan2(ly - ry, lx - rx) * 180.0 / np.pi)
         _d = np.sqrt(np.power(ly - ry, 2) + np.power(lx - rx, 2))
@@ -76,10 +89,13 @@ def main():
         _y -= baseY
         _z -= baseZ
 
+        face_angle.input(_angle)
+        face_distance.input(_z)
+
         smooth_x.input(_x)
         smooth_y.input(_y)
-        smooth_z.input(_z)
-        smooth_a.input(_angle)
+        smooth_z.input(face_distance.value())
+        smooth_a.input(face_angle.value())
 
         face.append((smooth_x.value(), smooth_y.value(),
                      smooth_z.value(), smooth_a.value()))
