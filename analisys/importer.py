@@ -441,6 +441,8 @@ def main():
                 _data.append(value)
                 order_flag = not order_flag
 
+            pprint.pprint(_data)
+
         print('... plotting')
 
         if args.all:
