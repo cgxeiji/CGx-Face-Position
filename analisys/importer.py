@@ -441,7 +441,8 @@ def main():
                 _data.append(value)
                 order_flag = not order_flag
 
-            pprint.pprint(recipe)
+            for _d in _data:
+                print(int(_d))
 
         print('... plotting')
 
@@ -479,6 +480,10 @@ def main():
 
             zones_ax.set_title("Pose Distribution")
             #zones_ax.legend(wedges, recipe)
+
+            plt.show()
+            print("Finished")
+            return
 
         face_in_safe = []
         _bar_text = []
