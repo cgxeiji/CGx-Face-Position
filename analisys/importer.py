@@ -36,6 +36,9 @@ parser.add_argument("-v", "--video", dest="video_data",
 parser.add_argument("-F", "--file", dest="filepath",
                     help="Specify the filepath of the log file to process")
 
+parser.add_argument("-C", "--change_timeout", dest="change_timeout",
+                    default="1", type=int,
+                    help="Specify the time in seconds in the Safe Zone to be counted as a change")
 parser.add_argument("-f", "--from", dest="from_time",
                     default="-1", type=float,
                     help="Specify the starting time to plot the graph")
@@ -509,8 +512,9 @@ def main():
 
         _bar_end.append(face_data[len(face_data) - 1][0])
 
-        for i in range(1, len(face_in_safe)):
-            if face_in_safe[i] == 0 and face_in_safe[i-1] == 1:
+        for i in range(1, len(face_in_safe)-args.change_timeout*10):
+            _face_sum = sum(face_in_safe[i:i+args.change_timeout*10])
+            if face_in_safe[i-1] == 0 and _face_sum == args.change_timeout*10:
                 face_change += 1
 
         print("Number of changes from unsafe to safe: {}".format(face_change))
