@@ -27,6 +27,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument("-a", "--all", dest="all",
                     action="store_true",
                     help="Plot all available information")
+parser.add_argument("-c", "--change", dest="change_only",
+                    action="store_true",
+                    help="Show only the number of changes from unsafe to safe posture")
 parser.add_argument("-v", "--video", dest="video_data",
                     action="store_true",
                     help="Load video annotation to sync with the data")
@@ -489,6 +492,7 @@ def main():
         _bar_text = []
         _bar_start = []
         _bar_end = []
+        face_change = 0
         for datum in face_data:
             if datum[5] == 'Pose Safe':
                 face_in_safe.append(1)
@@ -504,6 +508,14 @@ def main():
                 _bar_start.append(datum[0])
 
         _bar_end.append(face_data[len(face_data) - 1][0])
+
+        for i in range(1, len(face_in_safe)):
+            if face_in_safe[i] == 0 and face_in_safe[i-1] == 1:
+                face_change += 1
+
+        print("Number of changes from unsafe to safe: {}".format(face_change))
+        if args.change_only:
+            return
 
         _y_dict_m = {
             'Default Position': -3,
