@@ -512,12 +512,14 @@ def main():
 
         _bar_end.append(face_data[len(face_data) - 1][0])
 
-        for i in range(1, len(face_in_safe)-args.change_timeout*10):
+        for i in range(args.change_timeout*10, len(face_in_safe)-args.change_timeout*10):
             _face_sum = sum(face_in_safe[i:i+args.change_timeout*10])
-            if face_in_safe[i-1] == 0 and _face_sum == args.change_timeout*10:
+            _rest_sum = sum(face_in_safe[i-args.change_timeout*10:i])
+            if face_in_safe[i-1] == 0 and _face_sum == args.change_timeout*10 and _rest_sum == 0:
                 face_change += 1
 
         print("Number of changes from unsafe to safe: {}".format(face_change))
+        print(len([x for x in _bar_text if "Safe" in x]))
         if args.change_only:
             return
 
