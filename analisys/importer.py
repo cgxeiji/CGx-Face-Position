@@ -359,10 +359,12 @@ def main():
             'Move right': -5,
             'Turn clockwise': -6,
             'Turn counter clockwise': -7}
+        monitor_ranges = []
         for frame in monitor_motion:
             if frame[0] != "Default Fast":
                 start_time = frame[len(frame) - 2]
                 start_times.append(start_time)
+                monitor_ranges.append(len(monitor_data))
             timestamp = (frame[len(frame) - 2]
                          - start_time).total_seconds()
             datum = []
@@ -370,6 +372,7 @@ def main():
             datum.append(frame[0])
             datum.append(monitor.actions[frame[0]])
             monitor_data.append(datum)
+        monitor_ranges.append(len(monitor_data))
 
         stidx = 0
         for frame in face_frames:
@@ -690,67 +693,6 @@ def main():
                         left=None if args.from_time == -1 else args.from_time,
                         right=None if args.to_time == -1 else args.to_time)
 
-        if args.user_study:
-            titles = [i[1] for i in monitor_data]
-            _times = [i[0] for i in monitor_data]
-
-            # pprint.pprint(titles)
-            # pprint.pprint(monitor_data)
-            print(len(user_ranges))
-            print(len(start_times))
-            for jdx in range(len(start_times)/5):
-                fig, ax = plt.subplots(5, 1, sharex=True)
-                jdx *= 5
-                for idx in range(5):
-                    if idx+jdx > len(start_times) - 1:
-                        break
-                    ax[idx].xaxis.set_major_formatter(major_formatter)
-                    ax[idx].set_xlabel("time")
-                    ax[idx].set_ylabel("{}".format(
-                        titles[(idx+jdx)*2]), rotation=45)
-                    print(idx+jdx)
-
-                    ax[idx].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_x[ranges[idx+jdx]:ranges[idx+jdx+1]],
-                                 colors.face_loc["X"], linewidth=1)
-                    ax[idx].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_y[ranges[idx+jdx]:ranges[idx+jdx+1]],
-                                 colors.face_loc["Y"], linewidth=1)
-                    ax[idx].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_z[ranges[idx+jdx]:ranges[idx+jdx+1]],
-                                 colors.face_loc["Z"], linewidth=1)
-
-                    ax[idx].axvline(x=_times[2*(idx+jdx) + 1], color='black')
-
-                    ux = [i[0] for i in user_data[user_ranges[idx+jdx]:user_ranges[idx+jdx+1]]]
-                    uy = np.zeros(
-                        len(user_data[user_ranges[idx+jdx]:user_ranges[idx+jdx+1]]))
-
-                    ax[idx].set_ylim(-10, 10)
-                    ax[idx].locator_params(axis='x', nbins=export_nbins)
-                    ax[idx].set_xlim(
-                        left=0,
-                        right=500)
-
-                    ax2 = ax[idx].twinx()
-                    ax2.set_ylabel("Angle (degrees)",
-                                   color=colors.face_loc["A"])
-                    ax2.tick_params(
-                        axis='y', labelcolor=colors.face_loc["A"])
-
-                    ax2.plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], angle_data[ranges[idx+jdx]:ranges[idx+jdx+1]],
-                             colors.face_loc["A"], linewidth=1)
-
-                    ax2.set_ylim(-20, 20)
-                    ax2.set_xlim(
-                        left=0,
-                        right=500)
-
-                    ax[idx].plot(ux, uy, 'k*', markersize=10)
-
-                fig.savefig("{}{}.pdf".format(
-                    filepath.split('/')[-1], jdx), bbox_inches='tight')
-
-            plt.show()
-            return
-
         _monitor_text = []
         _monitor_start = []
         _monitor_end = []
@@ -808,6 +750,128 @@ def main():
                 prev_time = datum[0]
 
         _monitor_end.append(monitor_data[len(monitor_data) - 1][0])
+        if args.user_study:
+            titles = [i[1] for i in monitor_data]
+            _times = [i[0] for i in monitor_data]
+
+            # pprint.pprint(titles)
+            # pprint.pprint(monitor_data)
+            print(len(user_ranges))
+            print(len(monitor_ranges))
+            print(_monitor_time_data)
+            print(len(_monitor_time_data))
+            print(_monitor_z)
+            print(len(_monitor_z))
+            print(len(start_times))
+            for jdx in range(len(start_times)/2):
+                fig, ax = plt.subplots(4, 1, sharex=True)
+                jdx *= 2
+                for idx in range(2):
+                    if idx+jdx > len(start_times) - 1:
+                        break
+                    ax[idx*2].xaxis.set_major_formatter(major_formatter)
+                    ax[idx*2].set_xlabel("time")
+                    ax[idx*2].set_ylabel("{}".format(
+                        titles[(idx+jdx)*2]), rotation=45)
+                    print(idx+jdx)
+
+                    ax[idx*2].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_x[ranges[idx+jdx]:ranges[idx+jdx+1]],
+                                   colors.face_loc["X"], linewidth=1)
+                    ax[idx*2].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_y[ranges[idx+jdx]:ranges[idx+jdx+1]],
+                                   colors.face_loc["Y"], linewidth=1)
+                    ax[idx*2].plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], face_z[ranges[idx+jdx]:ranges[idx+jdx+1]],
+                                   colors.face_loc["Z"], linewidth=1)
+
+                    ax[idx*2].axvline(x=_times[2*(idx+jdx) + 1], color='black')
+
+                    ux = [i[0] for i in user_data[user_ranges[idx+jdx]:user_ranges[idx+jdx+1]]]
+                    uy = np.zeros(
+                        len(user_data[user_ranges[idx+jdx]:user_ranges[idx+jdx+1]]))
+
+                    ax[idx*2].set_ylim(-10, 10)
+                    ax[idx*2].locator_params(axis='x', nbins=export_nbins)
+                    ax[idx*2].set_xlim(
+                        left=0,
+                        right=500)
+
+                    ax2 = ax[idx*2].twinx()
+                    ax2.set_ylabel("Angle (degrees)",
+                                   color=colors.face_loc["A"])
+                    ax2.tick_params(
+                        axis='y', labelcolor=colors.face_loc["A"])
+
+                    ax2.plot(time_data[ranges[idx+jdx]:ranges[idx+jdx+1]], angle_data[ranges[idx+jdx]:ranges[idx+jdx+1]],
+                             colors.face_loc["A"], linewidth=1)
+
+                    ax2.set_ylim(-20, 20)
+                    ax2.set_xlim(
+                        left=0,
+                        right=500)
+
+                    ax[idx*2].plot(ux, uy, 'k*', markersize=10)
+
+                    # Plotting Monitor info
+                    _idx = idx
+
+                    ax[idx*2+1].xaxis.set_major_formatter(major_formatter)
+                    ax[idx*2+1].set_xlabel("time")
+                    ax[idx*2+1].set_ylabel("mon {}".format(
+                        titles[(idx+jdx)*2]), rotation=45)
+                    print(idx+jdx)
+                    _mt = [0.0]
+                    _mt.append(_monitor_time_data[monitor_ranges[_idx+jdx]])
+                    _mv = [0.0]
+                    _mv.append(_monitor_x[monitor_ranges[_idx+jdx]])
+
+                    ax[idx*2+1].plot(_mt, _mv,
+                                     colors.monitor_loc["X"], linewidth=1)
+                    _mv = [0.0]
+                    _mv.append(_monitor_y[monitor_ranges[_idx+jdx]])
+                    ax[idx*2+1].plot(_mt, _mv,
+                                     colors.monitor_loc["Y"], linewidth=1)
+                    _mv = [0.0]
+                    _mv.append(_monitor_z[monitor_ranges[_idx+jdx]])
+                    ax[idx*2+1].plot(_mt, _mv,
+                                     colors.monitor_loc["Z"], linewidth=1)
+
+                    ax[idx*2+1].axvline(x=_times[2 *
+                                                 (idx+jdx) + 1], color='black')
+
+                    ax[idx*2+1].set_ylim(-10, 10)
+                    ax[idx*2+1].locator_params(axis='x', nbins=export_nbins)
+                    ax[idx*2+1].set_xlim(
+                        left=0,
+                        right=500)
+
+                    ax2 = ax[idx*2+1].twinx()
+                    ax2.set_ylabel("Angle (degrees)",
+                                   color=colors.face_loc["A"])
+                    ax2.tick_params(
+                        axis='y', labelcolor=colors.face_loc["A"])
+
+                    _mv = [0.0]
+                    _mv.append(_monitor_a[monitor_ranges[_idx+jdx]])
+                    ax2.plot(_mt, _mv,
+                             colors.monitor_loc["A"], linewidth=1)
+                    _mv = [0.0]
+                    _mv.append(_monitor_b[monitor_ranges[_idx+jdx]])
+                    ax2.plot(_mt, _mv,
+                             colors.monitor_loc["B"], linewidth=1)
+                    _mv = [0.0]
+                    _mv.append(_monitor_c[monitor_ranges[_idx+jdx]])
+                    ax2.plot(_mt, _mv,
+                             colors.monitor_loc["C"], linewidth=1)
+
+                    ax2.set_ylim(-20, 20)
+                    ax2.set_xlim(
+                        left=0,
+                        right=500)
+
+                fig.savefig("{}{}.pdf".format(
+                    filepath.split('/')[-1], jdx), bbox_inches='tight')
+
+            plt.show()
+            return
 
         if args.all:
             for i in range(len(_monitor_text)):
